@@ -1,0 +1,34 @@
+- name: VM Build
+  hosts: all
+  connection:: winrm
+  gather_facts: true
+
+  tasks:
+    - name: Gather Custom Windows Facts 
+      block:
+        - name: Create Windows DIR
+          ansible.windows.win_file:
+            path: C:\Temp\facts
+            state: directory
+
+        - name: Copy pwsh script to windows servers 
+          ansible.windows.win_copy:
+            src: scripts/get_facts.ps1
+            dest: "C:\\Temp\\facts\\"
+
+        - name: Add facts to variable
+          ansible.builtin.setup:
+            fact_path: C:\TEMP\facts
+          register: win_fact
+      
+    - name: Chocolatey Install 
+      ansible.builtin.include_tasks: chocolatey.yml
+
+    - name: Base Application Installs 
+      ansible.builtin.include_tasks: apps.yml
+
+    - name: Configure Custom Software 
+      ansible.builtin.include_tasks: configure-custom-software.yml
+
+
+          

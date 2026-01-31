@@ -1,1 +1,1 @@
-# Manager-of-Configs
+# Manager of Configs

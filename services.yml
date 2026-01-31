@@ -1,0 +1,44 @@
+# Configure Services
+- name: Stop Delivery Optimization
+  ansible.windows.win_service:
+    name: Delivery Optimization
+    state: started
+
+- name: Disable Diagnostic Service Host
+  ansible.windows.win_service:
+    name: Diagnostic Service Host
+    start_mode: disabled
+    state: stopped
+
+- name: Disable Mobile Hotspot Service
+  ansible.windows.win_service:
+    name: "Windows Mobile Hotspot Service"
+    start_mode: disabled
+    state: stopped
+
+- name: Disable Xbox Live Auth Manager
+  ansible.windows.win_service:
+    name: "Xbox Live Auth Manager"
+    start_mode: disabled
+    state: stopped
+
+- name: Disable Xbox Live Game Save
+  ansible.windows.win_service:
+    name: "Xbox Live Game Save"
+    start_mode: disabled
+    state: stopped
+
+- name: Disable Xbox Live Networking Service
+  ansible.windows.win_service:
+    name: "Xbox Live Networking Service"
+    start_mode: disabled
+    state: stopped
+
+- name: Enable Remote Registry
+  ansible.windows.win_service:
+    name: Remote Registry
+    start_mode: auto
+    state: started
+
+- name: Reboot the machine with all defaults
+  ansible.windows.win_reboot:

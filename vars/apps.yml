@@ -1,0 +1,15 @@
+datadog_api_key: "{{ lookup('amazon.aws.aws_ssm', 'allwayshype/datadog-api-key') }}"
+datadog_config:
+  tags:
+    - platform:windows_server
+    - app_group:it_windows
+    - oncall_group:itcs
+  hostname_fqdn: true
+  log_level: INFO
+  apm_config: false
+  process_config:
+    enabled: true
+  logs_enabled: true
+  network_config:
+    enabled: true
+  datadog_checks:

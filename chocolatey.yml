@@ -1,0 +1,31 @@
+- name: Install and Configure Chocolatey
+  chocolatey.chocolatey.win_chocolatey:
+    name: chocolatey
+    bootstrap_script: 
+    state: latest
+
+- name: Remove the default public source
+  chocolatey.chocolatey.win_chocolatey_source:
+    name: chocolatey
+    state: absent
+
+- name: Add new internal source
+  chocolatey.chocolatey.win_chocolatey_source:
+    name: internal repo
+    state: present
+    source: 
+
+- name: Install Chocolatey for Business Extensions
+  chocolatey.chocolatey.win_chocolatey:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - chocolatey-liscense
+    - chocolatey.extension
+    - chocolatey-core.extension
+
+# Update chocolatey applications
+- name: Upgrade installed packages
+  chocolatey.chocolatey.win_chocolatey:
+    name: all
+    state: latest
