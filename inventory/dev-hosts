@@ -1,10 +1,10 @@
 [windows]
-Srv01 ansible_host=172.24.123.237
+Srv02 ansible_host=192.168.1.23
 
 [windows:vars]
-ansible_user=ansible
+ansible_user=Ansible
 ansible_connection=winrm
 ansible_winrm_server_cert_validation=ignore
 ansible_winrm_transport=ntlm
-ansible_winrm_scheme=http
-ansible_port=5985
+ansible_winrm_scheme=https
+ansible_port=5986

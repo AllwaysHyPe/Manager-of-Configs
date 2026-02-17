@@ -1,6 +1,6 @@
 - name: VM Build
   hosts: all
-  connection:: winrm
+  connection: winrm
   gather_facts: true
 
   tasks:
