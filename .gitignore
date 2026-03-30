@@ -147,4 +147,7 @@ $RECYCLE.BIN/
 # debug files
 .debug.sh
 
+# additional files
+.vault_pass
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,ansible,windows,terraform,azurefunctions,visualstudiocode,powershell

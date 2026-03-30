@@ -1,10 +1,11 @@
 [windows]
 Srv02 ansible_host=192.168.1.26
-2025Server ansible_host=192.168.1.30
+Srv2025 ansible_host=192.168.1.30
 
 
 [windows:vars]
 ansible_user=Ansible
+ansible_password=P@ssw0rd
 ansible_connection=winrm
 ansible_winrm_server_cert_validation=ignore
 ansible_winrm_transport=ntlm

@@ -20,15 +20,17 @@
           ansible.builtin.setup:
             fact_path: C:\TEMP\facts
           register: win_fact
+
+    - name: Rename server to match inventory hostname
+      ansible.windows.win_hostname:
+        name: "{{ inventory_hostname }}"
+      register: rename_result
       
     - name: Chocolatey Install 
       ansible.builtin.include_tasks: chocolatey.yml
+    
+    - name: Reboot to apply pending changes
+      ansible.windows.win_reboot:
+      when: rename_result.reboot_required
 
-    - name: Base Application Installs 
-      ansible.builtin.include_tasks: apps.yml
-
-    - name: Configure Custom Software 
-      ansible.builtin.include_tasks: configure-custom-software.yml
-
-
-          
+- import_playbook: playbooks/onboarding_arc.yml

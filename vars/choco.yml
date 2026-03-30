@@ -1,7 +1,3 @@
 chocolatey_fqdn: chocolatey.allwayshype.com
-keyvault_url: https://choco-kv4fbsd3ntcovx4.vault.azure.net/
-
-chocolatey_ccm_client_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'ccmClientCommunicationSalt', vault_url=keyvault_url) }}"
-chocolatey_ccm_service_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'ccmServiceCommunicationSalt', vault_url=keyvault_url) }}"
-chocolatey_repo_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'ChocoUserPassword', vault_url=keyvault_url) }}"
-chocolatey_cert_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'chococertpassword', vault_url=keyvault_url) }}"
+keyvault_name: choco-kv4fbsd3ntcovx4
+certificate_name: C4B-Azure-Certificate

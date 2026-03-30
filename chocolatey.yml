@@ -2,6 +2,28 @@
   ansible.builtin.include_vars:
     file: vars/choco.yml
 
+- name: Fetch Chocolatey secrets from Key Vault
+  ansible.builtin.shell: |
+    az keyvault secret show \
+      --vault-name {{ keyvault_name }} \
+      --name {{ item.secret }} \
+      --query value \
+      --output tsv
+  delegate_to: localhost
+  no_log: true
+  loop:
+    - { secret: 'ccmClientCommunicationSalt', var: 'ccm_client' }
+    - { secret: 'ccmServiceCommunicationSalt', var: 'ccm_service' }
+    - { secret: 'ChocoUserPassword', var: 'repo_password' }
+    - { secret: 'chococertpassword', var: 'cert_password' }
+  register: choco_secrets
+
+- name: Build Chocolatey secrets dictionary
+  ansible.builtin.set_fact:
+    choco: "{{ choco | default({}) | combine({ item.item.var: item.stdout | trim }) }}"    
+  no_log: true
+  loop: "{{ choco_secrets.results }}"
+
 - name: Create temp directory
   ansible.windows.win_file:
     path: C:\Temp\ChocoSetup
@@ -11,8 +33,8 @@
   ansible.builtin.shell: |
     rm -f /tmp/chocolatey.pfx
     az keyvault certificate download \
-      --vault-name choco-kv4fbsd3ntcovx4 \
-      --name C4B-Azure-Certificate \
+      --vault-name {{ keyvault_name }} \
+      --name {{ certificate_name }} \
       --file /tmp/chocolatey.pfx \
       --encoding PEM
   delegate_to: localhost
@@ -22,21 +44,10 @@
     src: /tmp/chocolatey.pfx
     dest: C:\Temp\ChocoSetup\chocolatey.pfx
 
-- name: Resolve cert password from Key Vault
-  ansible.builtin.shell: |
-    az keyvault secret show \
-      --vault-name choco-kv4fbsd3ntcovx4 \
-      --name chococertpassword \
-      --query value \
-      --output tsv
-  delegate_to: localhost
-  register: cert_password_result
-  no_log: true
-
 - name: Import SSL certificate to Trusted Root CA store
   ansible.windows.win_certificate_store:
     path: C:\Temp\ChocoSetup\chocolatey.pfx
-    password: "{{ cert_password_result.stdout }}"
+    password: "{{ choco.cert_password }}"
     store_location: LocalMachine
     store_name: Root
     state: present
@@ -50,11 +61,11 @@
   ansible.windows.win_shell: |
     C:\Temp\ChocoSetup\ClientSetup.ps1 `
       -Fqdn "{{ chocolatey_fqdn }}" `
-      -ClientCommunicationSalt "{{ chocolatey_ccm_client_password }}" `
-      -ServiceCommunicationSalt "{{ chocolatey_ccm_service_password }}" `
+      -ClientCommunicationSalt "{{ choco.ccm_client }}" `
+      -ServiceCommunicationSalt "{{ choco.ccm_service }}" `
       -RepositoryCredential ([System.Net.NetworkCredential]@{
         userName = 'chocouser'
-        password = '{{ chocolatey_repo_password }}'
+        password = '{{ choco.repo_password }}'
       })
   args:
     executable: powershell.exe

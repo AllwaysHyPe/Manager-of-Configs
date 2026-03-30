@@ -13,4 +13,6 @@
         msg: > 
           ansible vars:
           {{ vault_demo_user | default('undefined') }} (user) /
-          {{ vault_demo_password | default('undefined') }} (password)
+          {{ vault_demo_password | default('undefined') }} (password) /
+          {{ vault_sp_id | default('undefined') }} (sp_id) /
+          {{ vault_sp_secret | default('undefinded') }} (sp_secret)
