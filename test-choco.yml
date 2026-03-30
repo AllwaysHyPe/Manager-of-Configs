@@ -1,0 +1,8 @@
+- name: Test Chocolatey Setup
+  hosts: all
+  connection: winrm
+  gather_facts: false
+
+  tasks:
+    - name: Chocolatey Install
+      ansible.builtin.include_tasks: chocolatey.yml

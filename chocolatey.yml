@@ -1,31 +1,66 @@
-- name: Install and Configure Chocolatey
-  chocolatey.chocolatey.win_chocolatey:
-    name: chocolatey
-    bootstrap_script: 
-    state: latest
+- name: Import Chocolatey Variables
+  ansible.builtin.include_vars:
+    file: vars/choco.yml
 
-- name: Remove the default public source
-  chocolatey.chocolatey.win_chocolatey_source:
-    name: chocolatey
+- name: Create temp directory
+  ansible.windows.win_file:
+    path: C:\Temp\ChocoSetup
+    state: directory
+
+- name: Download SSL certificate from Key Vault
+  ansible.builtin.shell: |
+    rm -f /tmp/chocolatey.pfx
+    az keyvault certificate download \
+      --vault-name choco-kv4fbsd3ntcovx4 \
+      --name C4B-Azure-Certificate \
+      --file /tmp/chocolatey.pfx \
+      --encoding PEM
+  delegate_to: localhost
+
+- name: Copy SSL certificate to client
+  ansible.windows.win_copy:
+    src: /tmp/chocolatey.pfx
+    dest: C:\Temp\ChocoSetup\chocolatey.pfx
+
+- name: Resolve cert password from Key Vault
+  ansible.builtin.shell: |
+    az keyvault secret show \
+      --vault-name choco-kv4fbsd3ntcovx4 \
+      --name chococertpassword \
+      --query value \
+      --output tsv
+  delegate_to: localhost
+  register: cert_password_result
+  no_log: true
+
+- name: Import SSL certificate to Trusted Root CA store
+  ansible.windows.win_certificate_store:
+    path: C:\Temp\ChocoSetup\chocolatey.pfx
+    password: "{{ cert_password_result.stdout }}"
+    store_location: LocalMachine
+    store_name: Root
+    state: present
+
+- name: Copy Chocolatey client setup script
+  ansible.windows.win_copy:
+    src: scripts/ClientSetup.ps1
+    dest: C:\Temp\ChocoSetup\ClientSetup.ps1
+
+- name: Run Chocolatey client setup script
+  ansible.windows.win_shell: |
+    C:\Temp\ChocoSetup\ClientSetup.ps1 `
+      -Fqdn "{{ chocolatey_fqdn }}" `
+      -ClientCommunicationSalt "{{ chocolatey_ccm_client_password }}" `
+      -ServiceCommunicationSalt "{{ chocolatey_ccm_service_password }}" `
+      -RepositoryCredential ([System.Net.NetworkCredential]@{
+        userName = 'chocouser'
+        password = '{{ chocolatey_repo_password }}'
+      })
+  args:
+    executable: powershell.exe
+  no_log: true
+
+- name: Cleanup temp directory
+  ansible.windows.win_file:
+    path: C:\Temp\ChocoSetup
     state: absent
-
-- name: Add new internal source
-  chocolatey.chocolatey.win_chocolatey_source:
-    name: internal repo
-    state: present
-    source: 
-
-- name: Install Chocolatey for Business Extensions
-  chocolatey.chocolatey.win_chocolatey:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - chocolatey-liscense
-    - chocolatey.extension
-    - chocolatey-core.extension
-
-# Update chocolatey applications
-- name: Upgrade installed packages
-  chocolatey.chocolatey.win_chocolatey:
-    name: all
-    state: latest
