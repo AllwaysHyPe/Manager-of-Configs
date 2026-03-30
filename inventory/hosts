@@ -1,5 +1,7 @@
 [windows]
 Srv02 ansible_host=192.168.1.26
+2025Server ansible_host=192.168.1.30
+
 
 [windows:vars]
 ansible_user=Ansible

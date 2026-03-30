@@ -1,0 +1,16 @@
+---
+- name: Demo Ansible vault
+  hosts: localhost
+  gather_facts: false
+  become: false
+
+  vars_files:
+    - vars/secrets.yml
+
+  tasks:
+    - name: Lookup credentials from Ansible variables
+      ansible.builtin.debug:
+        msg: > 
+          ansible vars:
+          {{ vault_demo_user | default('undefined') }} (user) /
+          {{ vault_demo_password | default('undefined') }} (password)
