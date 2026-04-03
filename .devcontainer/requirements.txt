@@ -1,3 +1,0 @@
-aiohttp
-pywinrm
-boto3
