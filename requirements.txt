@@ -1,0 +1,22 @@
+# Core
+ansible>=2.8.0
+pip>=19.1
+
+# Windows VM support
+pywinrm>=0.2.2
+
+# Essential for Azure playbooks
+jmespath
+netaddr
+jsonschema
+
+# System facts
+psutil
+
+# DNS
+dnspython
+
+# Dev & testing
+ansible-lint
+pylint
+molecule
