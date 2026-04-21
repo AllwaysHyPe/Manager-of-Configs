@@ -1,0 +1,9 @@
+# confirm you're logged in and in the right subscription
+az login
+az account show --query "{name:name, id:id}" -o table
+
+az group create --name mgr-of-configs --location westus
+
+az storage account create --name mgrofconfigs --resource-group mgr-of-configs --location westus --sku Standard_LRS --allow-blob-public-access false
+
+az storage container create --name tfstate --account-name mgrofconfigs

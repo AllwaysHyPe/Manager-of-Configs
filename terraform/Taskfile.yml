@@ -1,0 +1,66 @@
+---
+
+# see https://taskfile.dev/docs/reference/schema#version
+version: '3'
+
+# see https://taskfile.dev/docs/reference/schema#env
+env:
+  # see https://developer.hashicorp.com/terraform/tutorials/automation/automate-terraform
+  TF_IN_AUTOMATION: '1'
+  # see https://developer.hashicorp.com/terraform/cli/commands#upgrade-and-security-bulletin-checks
+  CHECKPOINT_DISABLE: '1'
+
+# see https://taskfile.dev/docs/reference/schema#task
+tasks:
+  docs:
+    cmds:
+      - terraform-docs .
+    desc: 'Generate Terraform documentation'
+    preconditions:
+      - sh: command -v terraform-docs >/dev/null
+        msg: 'terraform-docs is required'
+
+  fmt:
+    cmds:
+      - terraform fmt -recursive
+    desc: 'Run `terraform fmt`'
+    preconditions:
+      - sh: command -v terraform >/dev/null
+        msg: 'Terraform is required'
+
+  init:
+    cmds:
+      - terraform init -upgrade
+    desc: 'Run `terraform init`'
+    preconditions:
+      - sh: command -v terraform >/dev/null
+        msg: 'Terraform is required'
+
+  init-tflint:
+    cmds:
+      - tflint --config .tflint.hcl --init
+    desc: 'Initialize tflint plugins'
+    preconditions:
+      - sh: command -v tflint >/dev/null
+        msg: 'tflint is required'
+
+  lint:
+    cmds:
+      - task: lint-tflint
+    desc: 'Run all linters'
+
+  lint-tflint:
+    cmds:
+      - tflint --config .tflint.hcl
+    desc: 'Run tflint on the current module'
+    preconditions:
+      - sh: command -v tflint >/dev/null
+        msg: 'tflint is required'
+
+  validate:
+    cmds:
+      - terraform validate
+    desc: 'Run `terraform validate`'
+    preconditions:
+      - sh: command -v terraform >/dev/null
+        msg: 'Terraform is required'

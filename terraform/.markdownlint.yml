@@ -1,0 +1,4 @@
+---
+
+# Disable rules that conflict with terraform-docs generated tables.
+MD060: false
