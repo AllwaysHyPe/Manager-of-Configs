@@ -13,7 +13,7 @@ resource "random_string" "main" {
 }
 
 locals {
-  resource_suffix = "${random_pet.main.id}-${random_string.main.result}"
+  resource_suffix = "${random_pet.main.id}${random_string.main.result}"
 }
 
 # see https://registry.terraform.io/modules/Azure/naming/azurerm/latest
@@ -21,7 +21,7 @@ module "naming" {
   source  = "Azure/naming/azurerm"
   version = "~> 0.4"
 
-  prefix = [var.prefix]
+  prefix = ["mgrcnfgs"]
   suffix = [local.resource_suffix]
 }
 
@@ -32,21 +32,6 @@ resource "azurerm_resource_group" "main" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
-  }
-}
-
-# see https://registry.terraform.io/modules/Azure/avm-res-storage-storageaccount/azurerm/latest
-module "storage" {
-  source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "~> 0.4"
-
-  name                = module.naming.storage_account.name_unique
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
-
-  tags = {
-    environment = "workshop"
     managed_by  = "terraform"
   }
 }
@@ -70,9 +55,13 @@ resource "azurerm_storage_account" "main" {
   }
 }
 
+# ┌──────────────────────────────────────────────────────────────────────────────┐
+# │ Exercise 2: Windows VM with IIS                                              │
+# │ Uncomment the blocks below to create a Windows VM running IIS.               │
+# └──────────────────────────────────────────────────────────────────────────────┘
 
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/virtual_network
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/virtual_network
 resource "azurerm_virtual_network" "main" {
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
@@ -84,16 +73,16 @@ resource "azurerm_virtual_network" "main" {
     managed_by  = "terraform"
   }
 }
-#
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/subnet
+
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/subnet
 resource "azurerm_subnet" "main" {
   address_prefixes     = ["10.0.1.0/24"]
   name                 = "internal"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
 }
-#
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/public_ip
+
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/public_ip
 resource "azurerm_public_ip" "main" {
   allocation_method   = "Static"
   location            = azurerm_resource_group.main.location
@@ -107,7 +96,7 @@ resource "azurerm_public_ip" "main" {
   }
 }
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_security_group
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_security_group
 resource "azurerm_network_security_group" "main" {
   location            = azurerm_resource_group.main.location
   name                = module.naming.network_security_group.name
@@ -131,7 +120,7 @@ resource "azurerm_network_security_group" "main" {
   }
 }
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_interface
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_interface
 resource "azurerm_network_interface" "main" {
   location            = azurerm_resource_group.main.location
   name                = module.naming.network_interface.name
@@ -150,13 +139,13 @@ resource "azurerm_network_interface" "main" {
   }
 }
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_interface_security_group_association
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_interface_security_group_association
 resource "azurerm_network_interface_security_group_association" "main" {
   network_interface_id      = azurerm_network_interface.main.id
   network_security_group_id = azurerm_network_security_group.main.id
 }
 
-# see https://registry.terraform.io/providers/hashicorp/random/3.8.1/docs/resources/password
+# # see https://registry.terraform.io/providers/hashicorp/random/3.8.1/docs/resources/password
 resource "random_password" "vm_admin" {
   length           = 24
   min_lower        = 1
@@ -167,7 +156,7 @@ resource "random_password" "vm_admin" {
   special          = true
 }
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/windows_virtual_machine
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/windows_virtual_machine
 resource "azurerm_windows_virtual_machine" "main" {
   admin_password      = random_password.vm_admin.result
   admin_username      = "workshopadmin"
@@ -203,7 +192,7 @@ resource "azurerm_windows_virtual_machine" "main" {
   }
 }
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/virtual_machine_extension
+# # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/virtual_machine_extension
 resource "azurerm_virtual_machine_extension" "iis" {
   name                 = "install-iis"
   publisher            = "Microsoft.Compute"

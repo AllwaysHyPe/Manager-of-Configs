@@ -24,14 +24,14 @@ output "storage_account_name" {
   value       = azurerm_storage_account.main.name
 }
 
-# Uncomment after Exercise 2
-# output "vm_admin_password" {
-#   description = "Admin password for the Windows VM"
-#   sensitive   = true
-#   value       = random_password.vm_admin.result
-# }
-#
-# output "vm_public_ip" {
-#   description = "Public IP address of the Windows VM"
-#   value       = azurerm_public_ip.main.ip_address
-# }
+# # Uncomment after Exercise 2
+output "vm_admin_password" {
+  description = "Admin password for the Windows VM"
+  sensitive   = true
+  value       = random_password.vm_admin.result
+}
+
+output "vm_public_ip" {
+  description = "Public IP address of the Windows VM"
+  value       = azurerm_public_ip.main.ip_address
+}
