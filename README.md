@@ -3,189 +3,112 @@
 > Reimagine server management from fine-grained configuration to a flexible
 > approach that enables any server to run what it needs, regardless of location.
  
+Session materials from the **From ConfigMgr to Manager of Configs** talk by
+[Hailey Phillips](https://bsky.app/profile/allwayshype.com) and [Frank Lesniak](https://bsky.app/profile/franklesniak.com).
+ 
+ 
+## What This Is
+ 
+If you've seen any of my sessions on Azure Arc and Azure Update Manager, you've
+probably heard the same questions I kept getting: "This is really cool, but how
+do I manage my servers and third-party apps without ConfigMgr?"
+ 
+That's what this repo is. Not a "throw everything away and start over" resource.
+A "here's how you take the skills you already have and scale them" resource.
+ 
+The barriers I hear consistently are real:
+ 
+- Where do I even start?
+- I've built all of these PowerShell scripts and I don't want to throw that time away
+- I'm a small team (or a team of one) and I have zero bandwidth to learn something new
+- What if I oversell this and can't deliver?
+All valid. This repo addresses all of them.
+ 
+The answer isn't a new tool. It's a pattern. Separate the things ConfigMgr
+conflated into one (state, updates, and applications) and suddenly every tool
+in this stack is doing exactly one thing it's actually good at.
+ 
+ 
+## The Stack
+ 
+**Terraform** for what Terraform is good at: plan, build, destroy. Terraform is
+excellent at making infrastructure exist in a declared state and managing the
+full resource lifecycle. It is not good at waiting for things to come up,
+handling reboots, or complex configuration sequencing. So we don't ask it to do
+those things. It provisions, enrolls into Azure Arc, sets the tags that drive
+everything downstream, and hands off cleanly.
+ 
+**Ansible** for everything Terraform is not good at: configuration, sequencing,
+waiting, reboots, CIS policy enforcement, Chocolatey bootstrap, CCM agent setup.
+Ansible is agentless, works natively with Windows over WinRM, and handles the
+kind of complex multi-step work that ConfigMgr task sequences used to own. The
+best part: you don't have to throw away your PowerShell scripts. You can call
+them from a playbook and get all of Ansible's orchestration on top of work you
+already did.
+ 
+**Azure Update Manager** for patch management across Arc-enrolled servers,
+consistent with how Azure-native VMs are patched. One of the first objections
+to cloud adoption, removed.
+ 
+**Chocolatey for Business** for application management. Internalized packages
+that live in your own infrastructure, never phone home, and work whether your
+servers are in Azure, on-prem, in a co-lo, or somewhere in between.
+ 
+The goal is a set-and-forget-*ish* solution that gives you breathing room to
+implement more cool things instead of spending all your time on reactive
+maintenance.
+ 
 
  
-## Why This Talk Exists
- 
-Most organizations know they need to modernize. Most organizations also have a
-decade of ConfigMgr investments, thousands of GPO settings, and at least one
-person who knows exactly why that one registry key is set to that one value —
-and that person is worried about what happens when you take ConfigMgr away.
- 
-This talk does not take ConfigMgr away. It answers a different question.
- 
-**ConfigMgr manages servers. This stack manages intent.**
- 
-When you manage servers, every server is a unique snowflake you have to know
-about individually. When you manage intent, you describe what done looks like
-and every server converges to that description — whether it's in your datacenter,
-an Azure region, a co-location facility, or someone's closet.
- 
-The transition from on-prem to cloud feels overwhelming because people try to
-replicate ConfigMgr in the cloud. That's the wrong goal. The right goal is to
-separate the three things ConfigMgr conflated into one tool:
- 
-- **What state should the OS be in?** — Configuration
-- **What software should be running?** — Application artifacts
-- **What patches are applied?** — Update management
-Separate those concerns and suddenly the cloud isn't a migration problem.
-It's just another place where your recipes run.
- 
-
- 
-## What Attendees Will Learn
- 
-**A scalable management model that facilitates cloud adoption.** Shift from
-server-centric thinking — where every machine is something you know about and
-manage individually — to intent-driven patterns where you describe desired state
-once and every server converges to it automatically, regardless of where it lives.
- 
-**How to modernize without a direct replacement for ConfigMgr or GPOs.** Not
-everything needs to change. The talk gives a clear framework for what to retain,
-what to replace, and how to navigate the transition without breaking what already
-works. You do not need to boil the ocean.
- 
-**The synergy of policy, configuration, artifacts, and automation.** Four tools,
-four concerns, one coherent pipeline. None of them need to know about the others.
-Together they handle everything ConfigMgr did, plus things ConfigMgr never could —
-like managing servers that aren't domain-joined, in clouds you don't own, at a
-scale where manual work isn't an option.
- 
-**Practical techniques for making applications portable and efficient.** Internalized
-packages that never phone home. Role-based software sets driven by tags. A package
-management pipeline that works in an air-gapped datacenter and a public cloud
-region using identical tooling.
- 
-
- 
-## The Core Metaphor
+## The Metaphor
  
 Counting every gram of flour is not the skill. Baking the cake is the skill.
  
-ConfigMgr shops carry enormous amounts of institutional knowledge about exactly
-how everything is configured — every GPO setting, every task sequence step,
-every distribution point. That knowledge is valuable. But it lives in people's
+ConfigMgr shops carry enormous institutional knowledge about exactly how
+everything is configured. That knowledge is valuable. But it lives in people's
 heads and runbooks, not in code. When those people leave, the grams go with them.
  
 A recipe is declarative. It says what done looks like. It does not care which
 oven you use, which region the flour came from, or whether you are baking one
-cake or a thousand. The recipe is portable, version-controlled, and readable
-by anyone on the team.
+cake or a thousand.
  
-**Terraform** bakes the cake tin — provisions infrastructure, enrolls servers
-into Azure Arc, and walks away. Its job is done the moment the server exists.
- 
-**Ansible** bakes the layers — applies configuration baselines, enforces CIS
-policies, remediates drift. It picks up exactly where Terraform left off.
- 
-**Azure Update Manager** keeps it fresh — patches the OS on a schedule,
-consistently, across every server regardless of location.
- 
-**Chocolatey for Business** pipes on the icing — installs the right applications
-at the right versions for each server role, from an internal repository that
-never depends on the internet.
+Write the recipe once. Take the recipe anywhere for dessert anytime.
  
 
  
-## Why These Tools, Not Others
+## Why Ansible for Configuration
  
-### Terraform — for what Terraform is good at
+AGENTLESS. You're getting closer to cloud-native instead of adding more agents
+to manage.
  
-Terraform is excellent at one thing: making infrastructure exist in a declared
-state. Plan, build, destroy. It manages the resource lifecycle declaratively,
-stores state so it knows what it created, and handles dependencies automatically.
+You keep your PowerShell scripts. Run them from a playbook and supercharge them
+with Ansible's ability to dynamically target hosts based on discovered parameters.
  
-Terraform is not good at waiting. It does not handle "provision this VM, wait
-for it to boot, wait for the Arc agent to phone home, then run a configuration
-script." That handoff is where many IaC implementations get complicated. This
-talk keeps Terraform in its lane — it provisions and Arc-enrolls, then hands off
-cleanly to Ansible via Azure tags.
+The same skills you build enforcing a CIS benchmark with Ansible are the same
+skills you use to bootstrap Chocolatey, configure IIS, set up the CCM agent,
+or run any other complex Windows configuration task. You're not learning a tool
+for one job. You're learning a language your entire config story is written in.
  
-### Ansible — for everything Terraform is not good at
+For the GPO question specifically: Azure Policy with Guest Configuration can
+enforce some of the same things, but it requires MOF files. If you haven't
+touched DSC since the brief window where it was going to be the future and then
+kind of wasn't, MOF files are not the skill you want to build. Ansible transfers.
  
-Ansible owns the configuration layer. It communicates over WinRM or SSH, handles
-reboots mid-playbook, manages Windows-specific resources natively, and is
-idempotent by default. It is also where the CIS benchmark enforcement lives —
-not because Ansible is the only tool that can do it, but because the same Ansible
-skill that enforces a CIS policy is the same skill that bootstraps Chocolatey,
-configures IIS, sets up the CCM agent, and handles every other complex
-configuration task that requires sequencing, waiting, and conditional logic.
  
-Azure Policy with Guest Configuration can enforce some of the same things, but
-it requires MOF files — a DSC artifact that most Windows admins haven't touched
-since the brief window where DSC was going to be the future and then kind of
-wasn't. Ansible transfers. MOF files don't.
+## Where to Start
  
-### Chocolatey for Business — for applications
+Not everything needs to change at once. Here's a practical framework:
  
-The icing is the last thing applied and the most visible thing. It is also what
-makes a server a web server vs a build agent vs a database host. Chocolatey owns
-application management — what software is installed, at what version, from what
-source.
+**Keep:** Domain membership, anything GPO/ConfigMgr is doing that genuinely
+belongs in policy, recent investments that are working.
  
-The key pattern is internalization: packages that embed or reference binaries
-from your own infrastructure rather than the vendor's CDN. An internalized package
-works in an air-gapped network, works after a vendor removes an old version,
-works when the internet is having a bad day. It is the difference between a recipe
-that requires a trip to the grocery store and one where all the ingredients are
-already in your kitchen.
+**Replace:** Software deployment to servers, patch management, configuration
+drift detection.
  
-
- 
-## The Four Concerns, Clearly Separated
- 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  INTENT                                                         │
-│  "This server should exist, be patched, be configured,          │
-│   and have these applications installed."                       │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │
-          ┌────────────────────┼────────────────────┐
-          ▼                    ▼                    ▼
-   ┌─────────────┐    ┌─────────────────┐    ┌───────────────────┐
-   │  Terraform  │    │     Ansible     │    │  Chocolatey C4B   │
-   │             │    │                 │    │                   │
-   │  Does the   │    │  Is the server  │    │  Is the right     │
-   │  server     │    │  in the right   │    │  software         │
-   │  exist?     │    │  state?         │    │  installed?       │
-   └──────┬──────┘    └────────┬────────┘    └────────┬──────────┘
-          │                    │                      │
-          ▼                    ▼                      ▼
-   Azure Arc enrolled    CIS baseline applied    Apps deployed
-   Tags set              Drift remediated        via CCM
-   Handed off            GPOs replaced           Internalized
-                                                 Role-specific
- 
-                    ┌─────────────────────┐
-                    │  Azure Update Mgr   │
-                    │  Is the OS patched? │
-                    └─────────────────────┘
-                    Applies to all servers
-                    regardless of location
-```
- 
-
- 
-## Talk Structure (~60 minutes)
- 
-**Opening — The Reframe (5 min)**
-The grain-counting problem. ConfigMgr works. So does measuring every gram of
-flour. The question is whether that is the skill you want to keep.
- 
-**Act 1 — The Update Problem (8 min)**
-Azure Update Manager. The easiest win. One objection removed before the main event.
- 
-**Act 2 — The Configuration Problem (20 min)**
-GPO tombstone. Ansible for CIS benchmarks using modular policy files. Arc dynamic
-inventory. The skill transferability argument — this knowledge compounds everywhere.
- 
-**Act 3 — The Application Problem (15 min)**
-Chocolatey for Business. The icing. Online vs internalized packages. The C4B +
-Azure architecture. The cost argument — live in the Azure Pricing Calculator.
- 
-**Act 4 — Synergy and Adoption (5 min)**
-The full pipeline. The decision framework. One actionable first step.
+**Start here:** Azure Arc Machine Config in audit-only mode. Less risk. Installs
+nothing. Changes nothing. Just shows you which servers are drifting from desired
+state. Once you see that report you'll want to fix the drift. Once you want to
+fix it automatically you'll want the rest of this stack.
  
 
  
@@ -193,66 +116,81 @@ The full pipeline. The decision framework. One actionable first step.
  
 ```
 terraform/
-├── 00-base/                Resource group only — starting point
-├── 01-storage-account/     Adds handwritten storage account
-├── 02-avm-storage/         Replaces handwritten with Azure Verified Module
-└── 03-windows-vm/          Full VM stack — the cake tin
+├── 00-base/                Resource group, the starting point
+├── 01-storage-account/     Adds a handwritten storage account
+├── 02-avm-storage/         Replaces it with an Azure Verified Module
+└── 03-windows-vm/          Full VM stack, the cake tin
  
 ansible/
 ├── inventory/
-│   └── azure_rm.yml        Dynamic inventory from Arc tags
+│   └── azure_rm.yml        Dynamic inventory driven by Arc tags
 ├── policies/
-│   ├── controls/           One file per CIS control
-│   ├── roles/              Role compositions
-│   └── exceptions/         Documented deviations with approvals
+│   ├── controls/           One file per CIS control, the policy library
+│   ├── roles/              Role compositions, which controls apply where
+│   └── exceptions/         Documented deviations with approval records
 └── playbooks/
-    ├── cis_enforce.yml
-    ├── cis_audit.yml
+    ├── cis_enforce.yml     Applies policy, reads from policies/
+    ├── cis_audit.yml       Check mode only, free compliance report
     └── chocolatey/         Bootstrap and CCM agent setup
- 
 chocolatey/
 └── README.md
 ```
  
-
+Each folder has its own README with setup steps and context for that section.
  
-## Azure Environment
  
-### Backend (permanent — manually created)
+## Getting Started with Terraform
  
-| Resource | Name | Purpose |
-|---|---|---|
-| Resource group | `mgr-of-configs` | Container for backend and Arc servers |
-| Storage account | `mgrofconfigs` | Terraform state backend |
-| Container | `tfstate` | State file location |
+### Prerequisites
  
-### Demo Arc Servers
+- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.14+
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- An Azure subscription with Contributor access
+### One-time backend setup
  
-| Server | Role tag | Notes |
-|---|---|---|
-| `Srv02` | `webserver` | Hyper-V VM, Arc-enrolled, Ansible target |
-| `Srv2025` | `webserver` | Hyper-V VM, Arc-enrolled, Ansible target |
+Terraform needs a storage account to keep its state file. Create this manually
+before running anything else. This is the one thing Terraform can't create for
+itself because it needs to exist before Terraform can start.
  
-### Terraform-managed (ephemeral)
+```bash
+az login
  
-Created and destroyed per demo run. Resource group follows `mgrcnfgs-{pet}{string}`.
-Random suffix means no naming conflicts between runs.
+az group create --name mgr-of-configs --location westus
  
-
+az storage account create \
+  --name mgrofconfigs \
+  --resource-group mgr-of-configs \
+  --location westus \
+  --sku Standard_LRS \
+  --allow-blob-public-access false
  
-## Demo Workflows
+az storage container create \
+  --name tfstate \
+  --account-name mgrofconfigs
+```
  
-### Terraform
+### Running the exercises
+ 
+Each exercise folder is a complete standalone Terraform configuration. Start
+with `00-base` and work forward. Each one builds on what the previous step
+deployed.
  
 ```bash
 cd terraform/00-base
-terraform init "-backend-config=backend.tfvars"
+cp backend.tfvars.example backend.tfvars
+cp terraform.tfvars.example terraform.tfvars
+ 
+terraform init
+terraform fwt
+terraform validate
 terraform plan "-out=tfplan"
 terraform apply tfplan
-# repeat for each exercise folder
 ```
  
-Reset between runs:
+Repeat for each exercise folder. Each `plan` will show only the new resources
+being added. Everything already deployed shows no changes. That's idempotency.
+ 
+### Tear down
  
 ```bash
 cd terraform/03-windows-vm && terraform destroy -auto-approve
@@ -261,17 +199,43 @@ cd ../01-storage-account && terraform destroy -auto-approve
 cd ../00-base && terraform destroy -auto-approve
 ```
  
-### Ansible
+
+ 
+## Getting Started with Ansible
+ 
+### Prerequisites
+ 
+Ansible runs on Linux or WSL. If you're on Windows, WSL is the easiest path.
+For a full WSL setup walkthrough see:
+[Modern Server Management with Ansible](https://www.allwayshype.com/allways-hype/modern-server-management-with-ansible)
  
 ```bash
-# check what Arc servers the dynamic inventory sees
-ansible-inventory -i ansible/inventory/azure_rm.yml --list
+pip3 install ansible ansible-lint
+pip3 install pywinrm
+ansible-galaxy collection install azure.azcollection
+az login
+```
  
-# audit — compliance report, no changes
+### Dynamic inventory
+ 
+Rather than maintaining a static hosts file, the inventory is driven by tags
+on your Azure Arc-enrolled servers. Any server tagged `role=webserver` is
+automatically in the `role_webserver` group. Add a server with the right tag
+and the next Ansible run picks it up automatically. No inventory file to update.
+ 
+```bash
+# see what servers the dynamic inventory finds
+ansible-inventory -i ansible/inventory/azure_rm.yml --list
+```
+ 
+### Running playbooks
+ 
+```bash
+# compliance report, check mode, nothing changes
 ansible-playbook ansible/playbooks/cis_audit.yml \
   -i ansible/inventory/azure_rm.yml --check --diff
  
-# enforce — apply policy
+# enforce, apply policy and fix drift
 ansible-playbook ansible/playbooks/cis_enforce.yml \
   -i ansible/inventory/azure_rm.yml
  
@@ -280,48 +244,63 @@ ansible-playbook ansible/playbooks/chocolatey/bootstrap.yml \
   -i ansible/inventory/azure_rm.yml --limit role_webserver
 ```
  
+### Enrolling servers into Arc via Ansible
+ 
+Rather than running the Arc enrollment script manually on each server, Ansible
+handles it:
+ 
+```bash
+ansible-playbook ansible/playbooks/azure/arc-onboard.yml \
+  -i ansible/inventory/azure_rm.yml
+```
+ 
 
  
-## Key Numbers for the Cost Objection
+## The Cost Question
  
-All verifiable in the Azure Pricing Calculator and Azure Bandwidth pricing page.
+
+[Azure Pricing Calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
+and the
+[Azure Bandwidth pricing page](https://azure.microsoft.com/en-us/pricing/details/bandwidth/).
  
 | Component | Cost |
 |---|---|
 | First 100GB egress/month | Free |
 | Internet egress after free tier (Zone 1) | $0.02/GB |
-| Private endpoint (per endpoint) | $0.01/hr (~$7.30/mo) |
+| Private endpoint (per endpoint) | ~$7.30/mo |
 | Private Link data processing | $0.01/GB |
 | Private DNS zone | $0.50/mo |
 | **Total fixed overhead (2 endpoints + DNS)** | **~$16/mo** |
 | Per 200MB package install | ~$0.002 |
 | 1,000 servers, 20 packages/month | ~$56/mo total |
  
-ConfigMgr is not free. CALs, SQL Server licensing, site server infrastructure,
-and FTE maintenance time are costs that rarely appear on the slide when someone
-argues against modernization.
+ConfigMgr is not free. CALs, SQL Server licensing, site server infrastructure, reliability, availability, 
+and the time to maintain it not often accounted for in the cost calculation when someone argues against modernization.
  
 
  
-## Co-Presenter Notes
+## Resources
  
-**The talk splits naturally at the Act 2 / Act 3 boundary.** One presenter can
-own Terraform + Arc enrollment + Ansible. The other can own Chocolatey for
-Business and the cost/architecture argument. Both sections are self-contained.
- 
-**Use the recipe metaphor as a transition.** Every section connects back to it.
-It is the thread that makes three separate demos feel like one coherent story.
- 
-**The GPO tombstone is intentional.** It is not saying GPOs are wrong — it is
-asking where the knowledge lives. That question lands differently for every
-person in the room. Let it sit for a moment before moving on.
- 
-**The cost objection will come from the audience.** Build the estimate live in
-the Azure Pricing Calculator rather than showing a static number. The audience
-can verify it on their phones while you are talking. That is more convincing
-than any slide.
- 
-**The first step for anyone in the audience is Arc Machine Config in audit-only
-mode.** It installs nothing, changes nothing, and requires no commitment to any
-of the other tools. It just shows which servers are drifting from desired state.
-That is the hook that makes people want to do the rest.
+### Ansible
+- [Ansible Documentation](https://docs.ansible.com/)
+- [Ansible Windows Modules](https://docs.ansible.com/ansible/2.9/modules/list_of_windows_modules.html)
+- [Ansible Community: Chocolatey Collection](https://docs.ansible.com/ansible/latest/collections/chocolatey/chocolatey/index.html)
+- [Configuring Remoting for Ansible](https://github.com/ansible/ansible/blob/stable-2.12/examples/scripts/ConfigureRemotingForAnsible.ps1)
+- Jeremy Murrah: [Ansible for the Windows Admin](https://www.youtube.com/watch?v=ZI20Y10OKd0)
+- Josh King: [Ansible 101 for the Windows SysAdmin](https://www.youtube.com/watch?v=SqO2HkKep90)
+- Josh King: [Your Superpowered Windows Infrastructure Toolkit: Ansible, PowerShell, and Chocolatey](https://www.youtube.com/watch?v=oKJtlEenaog&t=4664s)
+### Azure Arc
+- [Azure Arc Overview](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview)
+- [Onboard servers with Ansible](https://learn.microsoft.com/en-us/azure/azure-arc/servers/onboard-ansible-playbooks)
+- [Azure Arc Pricing](https://azure.microsoft.com/en-us/pricing/details/azure-arc/core-control-plane/)
+### Terraform
+- [Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
+- [Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
+- [Azure Naming Module](https://registry.terraform.io/modules/Azure/naming/azurerm/latest)
+### Chocolatey
+- [Chocolatey for Business](https://chocolatey.org/for-business)
+- [Chocolatey Central Management](https://docs.chocolatey.org/en-us/central-management/)
+- [Package Internalizer](https://docs.chocolatey.org/en-us/features/paid/package-internalizer)
+### WSL Setup
+- [Set up a WSL development environment](https://learn.microsoft.com/en-us/windows/wsl/setup/environment)
+- [Allways HyPe: Modern Server Management with Ansible](https://www.allwayshype.com/allways-hype/modern-server-management-with-ansible)
