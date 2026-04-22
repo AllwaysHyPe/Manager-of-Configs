@@ -115,25 +115,33 @@ fix it automatically you'll want the rest of this stack.
 ## Repo Structure
  
 ```
-terraform/
-├── 00-base/                Resource group, the starting point
-├── 01-storage-account/     Adds a handwritten storage account
-├── 02-avm-storage/         Replaces it with an Azure Verified Module
-└── 03-windows-vm/          Full VM stack, the cake tin
+01-terraform/
+├── bootstrap/              One-time backend setup scripts (PowerShell + Bash)
+└── stages/
+    ├── 00-base/            Resource group, the starting point
+    ├── 01-storage-account/ Adds a handwritten storage account
+    ├── 02-avm-storage/     Replaces it with an Azure Verified Module
+    └── 03-windows-vm/      Full VM stack, the cake tin
  
-ansible/
+02-ansible/
 ├── inventory/
 │   └── azure_rm.yml        Dynamic inventory driven by Arc tags
 ├── policies/
 │   ├── controls/           One file per CIS control, the policy library
 │   ├── roles/              Role compositions, which controls apply where
 │   └── exceptions/         Documented deviations with approval records
-└── playbooks/
-    ├── cis_enforce.yml     Applies policy, reads from policies/
-    ├── cis_audit.yml       Check mode only, free compliance report
-    └── chocolatey/         Bootstrap and CCM agent setup
-chocolatey/
-└── README.md
+├── playbooks/
+│   ├── 0-audit.yml         Check mode only, free compliance report
+│   ├── 1-cis-enforce.yml   Applies CIS policy, reads from policies/
+│   └── 2-windows-baseline.yml  GPO equivalent configuration tasks
+└── requirements.yml        Ansible collection dependencies
+ 
+03-chocolatey/
+├── 0-bootstrap.yml         Offline install, internal repo, disable community source
+├── 1-packagemgmt.yml       Package states: present, latest, pinned, downgrade
+├── 2-conf-features.yml     Chocolatey features and config settings
+├── bonus-1-legacy-windows.yml  .NET 4.8 prereq path with mid-playbook reboot
+└── bonus-2-ccm-client.yml  CCM agent install and configuration
 ```
  
 Each folder has its own README with setup steps and context for that section.
@@ -152,41 +160,39 @@ Terraform needs a storage account to keep its state file. Create this manually
 before running anything else. This is the one thing Terraform can't create for
 itself because it needs to exist before Terraform can start.
  
-```bash
-az login
+Run the bootstrap script from the `01-terraform/` directory:
  
-az group create --name mgr-of-configs --location westus
- 
-az storage account create \
-  --name mgrofconfigs \
-  --resource-group mgr-of-configs \
-  --location westus \
-  --sku Standard_LRS \
-  --allow-blob-public-access false
- 
-az storage container create \
-  --name tfstate \
-  --account-name mgrofconfigs
+```powershell
+# PowerShell
+./bootstrap/create-backend.ps1
 ```
+ 
+```bash
+# Bash/WSL
+./bootstrap/create-backend.sh
+```
+ 
+The script creates the resource group, storage account, and container, then
+prints the values to copy into `backend.azurerm.tfbackend`.
  
 ### Running the exercises
  
-Each exercise folder is a complete standalone Terraform configuration. Start
+Each stage folder is a complete standalone Terraform configuration. Start
 with `00-base` and work forward. Each one builds on what the previous step
 deployed.
  
 ```bash
-cd terraform/00-base
-cp backend.tfvars.example backend.tfvars
+cd 01-terraform/stages/00-base
+cp backend.azurerm.tfbackend.example backend.azurerm.tfbackend
 cp terraform.tfvars.example terraform.tfvars
  
-terraform init
-terraform fwt
+terraform init "-backend-config=backend.azurerm.tfbackend"
+terraform fmt
 terraform validate
 terraform plan "-out=tfplan"
 terraform apply tfplan
 ```
- 
+
 Repeat for each exercise folder. Each `plan` will show only the new resources
 being added. Everything already deployed shows no changes. That's idempotency.
  
@@ -202,7 +208,6 @@ cd ../00-base && terraform destroy -auto-approve
 
  
 ## Getting Started with Ansible
- 
 ### Prerequisites
  
 Ansible runs on Linux or WSL. If you're on Windows, WSL is the easiest path.
@@ -212,7 +217,7 @@ For a full WSL setup walkthrough see:
 ```bash
 pip3 install ansible ansible-lint
 pip3 install pywinrm
-ansible-galaxy collection install azure.azcollection
+ansible-galaxy collection install -r 02-ansible/requirements.yml
 az login
 ```
  
@@ -225,23 +230,27 @@ and the next Ansible run picks it up automatically. No inventory file to update.
  
 ```bash
 # see what servers the dynamic inventory finds
-ansible-inventory -i ansible/inventory/azure_rm.yml --list
+ansible-inventory -i 02-ansible/inventory/azure_rm.yml --list
 ```
  
 ### Running playbooks
  
 ```bash
 # compliance report, check mode, nothing changes
-ansible-playbook ansible/playbooks/cis_audit.yml \
-  -i ansible/inventory/azure_rm.yml --check --diff
+ansible-playbook 02-ansible/playbooks/0-audit.yml \
+  -i 02-ansible/inventory/azure_rm.yml --check --diff
  
-# enforce, apply policy and fix drift
-ansible-playbook ansible/playbooks/cis_enforce.yml \
-  -i ansible/inventory/azure_rm.yml
+# enforce, apply CIS policy and fix drift
+ansible-playbook 02-ansible/playbooks/1-cis-enforce.yml \
+  -i 02-ansible/inventory/azure_rm.yml
+ 
+# apply Windows baseline configuration
+ansible-playbook 02-ansible/playbooks/2-windows-baseline.yml \
+  -i 02-ansible/inventory/azure_rm.yml
  
 # bootstrap Chocolatey on webservers
-ansible-playbook ansible/playbooks/chocolatey/bootstrap.yml \
-  -i ansible/inventory/azure_rm.yml --limit role_webserver
+ansible-playbook 03-chocolatey/0-bootstrap.yml \
+  -i 02-ansible/inventory/azure_rm.yml --limit role_webserver
 ```
  
 ### Enrolling servers into Arc via Ansible
@@ -250,10 +259,9 @@ Rather than running the Arc enrollment script manually on each server, Ansible
 handles it:
  
 ```bash
-ansible-playbook ansible/playbooks/azure/arc-onboard.yml \
-  -i ansible/inventory/azure_rm.yml
+ansible-playbook 02-ansible/playbooks/azure/arc-onboard.yml \
+  -i 02-ansible/inventory/azure_rm.yml
 ```
- 
 
  
 ## The Cost Question
