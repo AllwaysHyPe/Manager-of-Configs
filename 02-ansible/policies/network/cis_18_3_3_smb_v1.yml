@@ -1,0 +1,21 @@
+---
+cis_control:
+  id: "18.3.3"
+  title: "Ensure SMBv1 client driver is disabled"
+  level: 1
+  scored: true
+  description: >
+    Disables the SMBv1 protocol. SMBv1 is a legacy protocol with known
+    critical vulnerabilities including EternalBlue used by WannaCry
+    and NotPetya ransomware.
+  rationale: >
+    There is no reason to have SMBv1 enabled on any modern Windows Server.
+    Disabling it removes a significant attack surface.
+  remediation:
+    type: win_regedit
+    path: 'HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10'
+    name: Start
+    data: 4
+    type_value: dword
+  references:
+    - "https://support.microsoft.com/en-us/topic/2696547"

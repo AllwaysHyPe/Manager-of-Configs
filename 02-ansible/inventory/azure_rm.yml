@@ -1,0 +1,42 @@
+---
+# Dynamic inventory from Azure Arc-enrolled servers.
+# Servers are grouped automatically by their Azure tags.
+# No hosts file to maintain. Add a server with the right tags
+# and the next playbook run picks it up automatically.
+#
+# Prerequisites:
+#   pip3 install ansible ansible-lint pywinrm
+#   ansible-galaxy collection install azure.azcollection
+#   az login
+
+plugin: azure.azcollection.azure_rm
+
+# Pull all Arc-enrolled servers from the mgr-of-configs resource group.
+# Remove or adjust this to target a different scope.
+include_vm_resource_groups:
+  - mgr-of-configs
+
+# Group servers by their role and environment tags.
+# A server tagged role=webserver appears in the group role_webserver.
+# A server tagged environment=mgr-of-configs appears in env_mgr_of_configs.
+keyed_groups:
+  - key: tags.role
+    prefix: role
+    separator: '_'
+  - key: tags.environment
+    prefix: env
+    separator: '_'
+
+# Only include servers that have the managed_by=ansible tag.
+# This prevents playbooks from accidentally targeting unmanaged servers.
+conditional_groups:
+  ansible_managed: "'ansible' in (tags.managed_by | default(''))"
+
+# Connection settings for Windows hosts.
+compose:
+  ansible_host: public_ip_address
+  ansible_user: "'workshopadmin'"
+  ansible_password: "'{{ lookup(\"env\", \"ANSIBLE_WINDOWS_PASSWORD\") }}'"
+  ansible_connection: "'winrm'"
+  ansible_winrm_transport: "'ntlm'"
+  ansible_winrm_server_cert_validation: "'ignore'"

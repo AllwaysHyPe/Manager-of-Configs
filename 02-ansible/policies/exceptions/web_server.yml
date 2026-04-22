@@ -1,0 +1,16 @@
+---
+# Documented exceptions require control_id, reason, and approved_by.
+# This file is your audit evidence. If a control is excluded,
+# it must be justified here.
+
+exceptions:
+  - control_id: "2.2.1"
+    title: "Network access restriction"
+    reason: >
+      Web application uses a service account for network share access.
+      Restricting SeNetworkLogonRight to Administrators only breaks
+      the application deployment pipeline. Ticket: CHG-2024-0847.
+    approved_by: "security-team@company.com"
+    approved_date: "2024-03-15"
+    review_date: "2025-03-15"
+    risk_accepted: true

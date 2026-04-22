@@ -1,3 +1,0 @@
-vm_join_domain: allwayshype.internal
-vm_join_user: svc-ansible@allwayshype.com
-vm_join_password: "{{ lookup('amazon.aws.aws_ssm', 'allwayshype/svc-ansible-pw') }}"

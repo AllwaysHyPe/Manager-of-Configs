@@ -1,7 +1,0 @@
-collections:
-  - ansible.windows
-  - azure.azcollection
-  - amazon.aws
-  - chocolatey.chocolatey
-  - community.windows
-  - microsoft.ad

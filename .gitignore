@@ -152,5 +152,12 @@ $RECYCLE.BIN/
 .vault_pass
 *.vault_pass
 demo/vars/*
+terraform.tfvars
+backend.azurerm.tfbackend
+tfplan
+tfplan-destroy
+.terraform/
+*.tfstate
+*.tfstate.backup
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,ansible,windows,terraform,azurefunctions,visualstudiocode,powershell

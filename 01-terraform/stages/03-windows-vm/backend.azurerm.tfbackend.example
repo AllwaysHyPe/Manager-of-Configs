@@ -1,0 +1,12 @@
+# Copy to backend.azurerm.tfbackend and update with your values.
+# backend.azurerm.tfbackend is gitignored — never commit it.
+#
+# Run the bootstrap script first if you have not already:
+#   PowerShell: ../../bootstrap/create-backend.ps1
+#   Bash/WSL:   ../../bootstrap/create-backend.sh
+
+resource_group_name  = "mgr-of-configs"
+storage_account_name = "mgrofconfigs"
+container_name       = "tfstate"
+key                  = "mgr-of-configs/03-windows-vm.tfstate"
+use_azuread_auth     = true

@@ -1,0 +1,62 @@
+---
+# Run this first. Always.
+# Check mode means nothing changes — this is a compliance report.
+#
+# Usage:
+#   ansible-playbook playbooks/0-audit.yml \
+#     -i inventory/azure_rm.yml \
+#     --check --diff
+#
+# What you get:
+#   Green  = already compliant, no action needed
+#   Yellow = would change (drift detected)
+#   Red    = task failed
+#
+# Hand the output to your auditor. That's your compliance report.
+
+- name: CIS Windows Server 2022 — audit
+  hosts: role_webserver
+  gather_facts: true
+
+  vars:
+    # Set cis_level2 to true for database servers or high-security environments.
+    # Level 2 controls are more restrictive and need testing before enabling.
+    cis_level1: true
+    cis_level2: false
+
+  tasks:
+
+    - name: "CIS 1.1.1 | L1 | Ensure password history is 24 or more"
+      win_security_policy:
+        section: System Access
+        key: PasswordHistorySize
+        value: "24"
+      when: cis_level1
+
+    - name: "CIS 2.3.1.1 | L1 | Ensure guest account is disabled"
+      win_user:
+        name: Guest
+        account_disabled: true
+      when: cis_level1
+
+    - name: "CIS 9.1.1 | L1 | Ensure domain firewall profile is enabled"
+      win_firewall:
+        profiles: Domain
+        state: enabled
+      when: cis_level1
+
+    - name: "CIS 18.3.3 | L1 | Disable SMBv1 client driver"
+      win_regedit:
+        path: 'HKLM:\SYSTEM\CurrentControlSet\Services\mrxsmb10'
+        name: Start
+        data: 4
+        type: dword
+      when: cis_level1
+
+    - name: "CIS 18.9.85.2 | L2 | Disable WDigest authentication"
+      win_regedit:
+        path: 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest'
+        name: UseLogonCredential
+        data: 0
+        type: dword
+      when: cis_level1 and cis_level2

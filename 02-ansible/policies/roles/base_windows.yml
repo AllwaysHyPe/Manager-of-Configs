@@ -1,0 +1,15 @@
+---
+# Applied to every Windows server regardless of role.
+# These are non-negotiable Level 1 controls.
+# No exceptions without a documented approval in exceptions/.
+
+role:
+  name: base_windows
+  description: >
+    Minimum CIS Level 1 baseline for all Windows Server 2022 instances.
+  level2_enabled: false
+
+  controls:
+    - controls/account_policies/cis_1_1_1_password_history.yml
+    - controls/network/cis_18_3_3_smb_v1.yml
+    - controls/security_options/cis_2_3_1_1_guest_account.yml

@@ -1,8 +1,0 @@
-azure:
-  service_principal_id: "{{ vault_sp_id }}"
-  service_principal_secret: "{{ vault_sp_secret }}"
-  resource_group: 'Manager-of-Configs'
-  tenant_id: "{{ vault_tenant_id }}"
-  subscription_id: "{{ vault_subscription_id }}"
-  location: 'westus'
-  proxy: ''

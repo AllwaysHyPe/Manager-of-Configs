@@ -1,0 +1,135 @@
+---
+# Windows configuration baseline — the GPO replacement playbook.
+#
+# Every task here maps to something you would previously manage in GPMC.
+# The difference: this file is in Git, has a change history, runs against
+# any Windows server regardless of whether it is domain-joined, and audits
+# itself when run with --check.
+#
+# Usage:
+#   ansible-playbook playbooks/2-windows-baseline.yml \
+#     -i inventory/azure_rm.yml
+#
+#   Audit only (no changes):
+#   ansible-playbook playbooks/2-windows-baseline.yml \
+#     -i inventory/azure_rm.yml --check --diff
+
+- name: Windows configuration baseline
+  hosts: role_webserver
+  gather_facts: true
+
+  tasks:
+
+    # -------------------------------------------------------
+    # Services — previously managed via GPO startup type
+    # Computer Config > Windows Settings > System Services
+    # -------------------------------------------------------
+
+    - name: "Ensure Windows Firewall service is running"
+      win_service:
+        name: MpsSvc
+        state: started
+        start_mode: auto
+
+    - name: "Ensure Remote Registry service is disabled"
+      win_service:
+        name: RemoteRegistry
+        state: stopped
+        start_mode: disabled
+
+    - name: "Ensure Windows Update service is running"
+      win_service:
+        name: wuauserv
+        state: started
+        start_mode: auto
+
+    # -------------------------------------------------------
+    # Registry — previously managed via GPO registry preferences
+    # Computer Config > Preferences > Windows Settings > Registry
+    # -------------------------------------------------------
+
+    - name: "Disable TLS 1.0"
+      win_regedit:
+        path: 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Server'
+        name: Enabled
+        data: 0
+        type: dword
+
+    - name: "Disable TLS 1.1"
+      win_regedit:
+        path: 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server'
+        name: Enabled
+        data: 0
+        type: dword
+
+    - name: "Set legal notice caption"
+      win_regedit:
+        path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+        name: LegalNoticeCaption
+        data: "Authorized Access Only"
+        type: string
+
+    - name: "Set legal notice text"
+      win_regedit:
+        path: 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+        name: LegalNoticeText
+        data: "Authorized users only. All activity is monitored."
+        type: string
+
+    # -------------------------------------------------------
+    # Firewall rules — previously managed via GPO
+    # Computer Config > Windows Settings > Security Settings
+    #   > Windows Defender Firewall
+    # -------------------------------------------------------
+
+    - name: "Enable Windows Firewall for all profiles"
+      win_firewall:
+        profiles:
+          - Domain
+          - Private
+          - Public
+        state: enabled
+
+    - name: "Ensure RDP firewall rule exists and is enabled"
+      win_firewall_rule:
+        name: Remote Desktop - User Mode (TCP-In)
+        enabled: true
+        state: present
+
+    # -------------------------------------------------------
+    # Windows features — previously managed via GPO or SCCM
+    # -------------------------------------------------------
+
+    - name: "Ensure Telnet Client is not installed"
+      win_feature:
+        name: Telnet-Client
+        state: absent
+
+    - name: "Ensure SNMP Service is not installed"
+      win_feature:
+        name: SNMP-Service
+        state: absent
+
+    # -------------------------------------------------------
+    # Local security policy — previously managed via GPO
+    # Computer Config > Windows Settings > Security Settings
+    #   > Local Policies > Security Options
+    # -------------------------------------------------------
+
+    - name: "Ensure interactive logon requires Ctrl+Alt+Del"
+      win_security_policy:
+        section: System Access
+        key: DisableCAD
+        value: "0"
+
+    - name: "Set account lockout threshold to 5 attempts"
+      win_security_policy:
+        section: System Access
+        key: LockoutBadCount
+        value: "5"
+
+    - name: "Set account lockout duration to 15 minutes"
+      win_security_policy:
+        section: System Access
+        key: LockoutDuration
+        value: "15"
