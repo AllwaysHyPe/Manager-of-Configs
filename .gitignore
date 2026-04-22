@@ -160,4 +160,9 @@ tfplan-destroy
 *.tfstate
 *.tfstate.backup
 
+# misc files
+02-ansible/templates-will-delete
+02-ansible/templates-will-delete/*
+
+
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,ansible,windows,terraform,azurefunctions,visualstudiocode,powershell
