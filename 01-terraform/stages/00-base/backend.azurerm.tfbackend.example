@@ -9,4 +9,3 @@ resource_group_name  = "mgr-of-configs"
 storage_account_name = "mgrofconfigs"
 container_name       = "tfstate"
 key                  = "mgr-of-configs/00-base.tfstate"
-use_azuread_auth     = true

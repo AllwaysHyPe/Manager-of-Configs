@@ -24,7 +24,7 @@ output "avm_storage_account_name" {
 }
 
 output "vm_admin_password" {
-  description = "Admin password for the Windows VM"
+  description = "Admin password for the Windows VM."
   sensitive   = true
   value       = random_password.vm_admin.result
 }

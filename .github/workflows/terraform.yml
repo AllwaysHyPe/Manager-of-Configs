@@ -5,13 +5,23 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    paths:
+      - '01-terraform/**'
 
 concurrency:
   group: ${{ github.repository }}-terraform-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
+  id-token: write
   contents: read
+  pull-requests: write
+
+env:
+  ARM_USE_OIDC: true
+  ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
 jobs:
   terraform:

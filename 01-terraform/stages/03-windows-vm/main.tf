@@ -48,9 +48,9 @@ module "storage" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "~> 0.4"
 
-  name                = module.naming.storage_account.name_unique
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  name                      = module.naming.storage_account.name_unique
+  resource_group_name       = azurerm_resource_group.main.name
+  location                  = azurerm_resource_group.main.location
   shared_access_key_enabled = true
 
   # The AVM defaults to ZRS. ZRS is not available in all regions including
@@ -104,22 +104,46 @@ resource "azurerm_network_security_group" "main" {
   name                = module.naming.network_security_group.name
   resource_group_name = azurerm_resource_group.main.name
 
-  security_rule {
-    access                     = "Allow"
-    destination_address_prefix = "*"
-    destination_port_range     = "80"
-    direction                  = "Inbound"
-    name                       = "allow-http"
-    priority                   = 100
-    protocol                   = "Tcp"
-    source_address_prefix      = "*"
-    source_port_range          = "*"
-  }
-
+  # This rule is intentionally permissive for the demo so the IIS page is
+  # reachable from any browser. In production restrict source_address_prefix
+  # to known ranges and terminate HTTPS at a load balancer or App Gateway.
   tags = {
     environment = "mgr-of-configs"
     managed_by  = "terraform"
   }
+
+}
+
+resource "azurerm_network_security_rule" "allow_http" {
+  name                        = "HTTP"
+  priority                    = 1002
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "80"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.main.name
+}
+
+
+resource "azurerm_network_security_rule" "allow_winrm" {
+  # WinRM over HTTPS on port 5986 is how Ansible communicates with Windows.
+  # The GitHub Actions runner connects on this port to run playbooks.
+  # In production restrict source_address_prefix to GitHub Actions IP ranges.
+  name                        = "WinRM"
+  priority                    = 1002
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "5986"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.main.name
 }
 
 # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/network_interface
@@ -161,7 +185,7 @@ resource "random_password" "vm_admin" {
 # see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/windows_virtual_machine
 resource "azurerm_windows_virtual_machine" "main" {
   admin_password      = random_password.vm_admin.result
-  admin_username      = "workshopadmin"
+  admin_username      = "vm_admin"
   location            = azurerm_resource_group.main.location
   name                = module.naming.virtual_machine.name
   resource_group_name = azurerm_resource_group.main.name

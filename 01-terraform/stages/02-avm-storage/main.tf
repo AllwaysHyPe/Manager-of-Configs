@@ -50,9 +50,9 @@ module "storage" {
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "~> 0.4"
 
-  name                = module.naming.storage_account.name_unique
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  name                      = module.naming.storage_account.name_unique
+  resource_group_name       = azurerm_resource_group.main.name
+  location                  = azurerm_resource_group.main.location
   shared_access_key_enabled = true
 
   # The AVM defaults to ZRS. ZRS is not available in all regions including

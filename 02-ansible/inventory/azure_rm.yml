@@ -1,5 +1,5 @@
 ---
-# Dynamic inventory from Azure Arc-enrolled servers.
+# Dynamic inventory from Azure.
 # Servers are grouped automatically by their Azure tags.
 # No hosts file to maintain. Add a server with the right tags
 # and the next playbook run picks it up automatically.
@@ -34,9 +34,11 @@ conditional_groups:
 
 # Connection settings for Windows hosts.
 compose:
-  ansible_host: public_ip_address
-  ansible_user: "'workshopadmin'"
-  ansible_password: "'{{ lookup(\"env\", \"ANSIBLE_WINDOWS_PASSWORD\") }}'"
+  ansible_host: public_ipv4_address
+  ansible_user: "'vm_admin_password'"
+  ansible_password: "lookup('env', 'ANSIBLE_WINDOWS_PASSWORD')"
   ansible_connection: "'winrm'"
   ansible_winrm_transport: "'ntlm'"
   ansible_winrm_server_cert_validation: "'ignore'"
+  ansible_winrm_port: "5986"
+  ansible_winrm_scheme: "'https'"

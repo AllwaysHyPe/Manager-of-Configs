@@ -1,0 +1,57 @@
+name: Ansible
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '02-ansible/**'
+
+concurrency:
+  group: ${{ github.repository }}-ansible-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  ansible:
+    name: Ansible
+    runs-on: ubuntu-latest
+
+    env:
+      # These env vars are what the Azure dynamic inventory plugin reads.
+      # Same OIDC credentials Terraform uses — no extra secrets needed.
+      AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+      ANSIBLE_WINDOWS_PASSWORD: ${{ secrets.WINDOWS_VM_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.ARM_CLIENT_ID }}
+          tenant-id: ${{ secrets.ARM_TENANT_ID }}
+          subscription-id: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible and dependencies
+        run: |
+          pip install ansible pywinrm
+          ansible-galaxy collection install -r 02-ansible/requirements.yml
+          pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
+
+      - name: Verify dynamic inventory
+        run: |
+          ansible-inventory \
+            -i 02-ansible/inventory/azure_rm.yml \
+            --list

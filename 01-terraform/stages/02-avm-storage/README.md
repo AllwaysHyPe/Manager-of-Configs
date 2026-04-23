@@ -24,6 +24,8 @@ The AVM module is a new source that needs to be downloaded.
 
 ```bash
 terraform init "-backend-config=backend.azurerm.tfbackend"
+terraform fmt
+terraform validate
 terraform plan "-out=tfplan"
 terraform apply tfplan
 ```
