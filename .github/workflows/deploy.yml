@@ -114,7 +114,7 @@ jobs:
       - name: Install Ansible and dependencies
         run: |
           pip install ansible pywinrm
-          ansible-galaxy collection install -r 02-ansible/requirements.yml
+          ansible-galaxy collection install -r 02-ansible/requirements.yml --force
           pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 
       - name: Verify dynamic inventory
