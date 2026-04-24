@@ -9,10 +9,3 @@ variable "prefix" {
   description = "Prefix applied to all resource names"
   type        = string
 }
-
-variable "ansible_username" {
-  type        = string
-  description = "Ansible username for Ansible to interact with the virtual machine"
-  default     = "ansible"
-  
-}
