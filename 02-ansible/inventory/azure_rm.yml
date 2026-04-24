@@ -10,8 +10,9 @@
 #   az login
 
 plugin: azure.azcollection.azure_rm
+auth_source: cli 
 
-# Pull all Arc-enrolled servers from the mgr-of-configs resource group.
+# Pull all servers from the mgr-of-configs resource group.
 # Remove or adjust this to target a different scope.
 include_vm_resource_groups:
   - mgr-of-configs

@@ -215,6 +215,7 @@ resource "azurerm_windows_virtual_machine" "main" {
   tags = {
     environment = "mgr-of-configs"
     managed_by  = "terraform"
+    ansible     = "true"
     role        = "webserver"
     choco_agent = "true"
   }
