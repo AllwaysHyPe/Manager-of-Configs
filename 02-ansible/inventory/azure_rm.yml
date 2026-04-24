@@ -35,7 +35,7 @@ conditional_groups:
 # Connection settings for Windows hosts.
 compose:
   ansible_host: public_ipv4_address
-  ansible_user: "'vm_admin_password'"
+  ansible_user: "'vm_admin'"
   ansible_password: "lookup('env', 'ANSIBLE_WINDOWS_PASSWORD')"
   ansible_connection: "'winrm'"
   ansible_winrm_transport: "'ntlm'"

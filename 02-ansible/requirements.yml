@@ -1,6 +1,9 @@
 ---
 collections:
-  - ansible.windows
-  - community.windows
-  - chocolatey.chocolatey
-  - azure.azcollection
+  - 'ansible.windows'
+  - 'ansible.utils'
+  - 'community.windows'
+  - 'chocolatey.chocolatey'
+  - 'azure.azcollection'
+  - 'community.general'
+...
