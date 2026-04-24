@@ -47,15 +47,15 @@ jobs:
 
       - name: Terraform fmt
         run: terraform fmt -check
-        working-directory: 01-terraform/stages/${{ matrix.stage }}
+        working-directory: 01-terraform/${{ matrix.stage }}
 
       - name: Terraform init
         run: terraform init -backend=false
-        working-directory: 01-terraform/stages/${{ matrix.stage }}
+        working-directory: 01-terraform/${{ matrix.stage }}
 
       - name: Terraform validate
         run: terraform validate -no-color
-        working-directory: 01-terraform/stages/${{ matrix.stage }}
+        working-directory: 01-terraform/${{ matrix.stage }}
 
   deploy:
     name: Deploy
