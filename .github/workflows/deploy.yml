@@ -78,7 +78,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform init
-        working-directory: 01-terraform/stages/03-windows-vm
+        working-directory: 01-terraform/03-windows-vm
         run: |
           terraform init \
             -backend-config="resource_group_name=${{ secrets.RESOURCE_GROUP_NAME }}" \
@@ -87,16 +87,16 @@ jobs:
             -backend-config="key=mgr-of-configs/03-windows-vm.tfstate"
 
       - name: Terraform plan
-        working-directory: 01-terraform/stages/03-windows-vm
+        working-directory: 01-terraform/03-windows-vm
         run: terraform plan -out=tfplan -no-color
 
       - name: Terraform apply
-        working-directory: 01-terraform/stages/03-windows-vm
+        working-directory: 01-terraform/03-windows-vm
         run: terraform apply tfplan
 
       - name: Capture Terraform outputs
         id: tf
-        working-directory: 01-terraform/stages/03-windows-vm
+        working-directory: 01-terraform/03-windows-vm
         run: |
           VM_PASSWORD=$(terraform output -raw vm_admin_password)
           echo "vm_password=$VM_PASSWORD" >> $GITHUB_OUTPUT
