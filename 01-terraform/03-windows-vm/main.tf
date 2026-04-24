@@ -116,7 +116,7 @@ resource "azurerm_network_security_group" "main" {
 
 resource "azurerm_network_security_rule" "allow_http" {
   name                        = "HTTP"
-  priority                    = 1002
+  priority                    = 1003
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
