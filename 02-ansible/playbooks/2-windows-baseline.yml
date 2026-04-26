@@ -72,19 +72,19 @@
         state: absent
 
     - name: "Ensure interactive logon requires Ctrl+Alt+Del"
-      ansible.windows.win_security_policy:
+      community.windows.win_security_policy:
         section: System Access
         key: DisableCAD
         value: "0"
 
     - name: "Set account lockout threshold to 5 attempts"
-      ansible.windows.win_security_policy:
+      community.windows.win_security_policy:
         section: System Access
         key: LockoutBadCount
         value: "5"
 
     - name: "Set account lockout duration to 15 minutes"
-      ansible.windows.win_security_policy:
+      community.windows.win_security_policy:
         section: System Access
         key: LockoutDuration
         value: "15"
