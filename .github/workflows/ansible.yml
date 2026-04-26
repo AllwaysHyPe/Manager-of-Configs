@@ -54,12 +54,14 @@ jobs:
           pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 
       - name: Verify dynamic inventory
+        working-directory: 02-ansible
         run: |
           ansible-inventory \
             -i 02-ansible/inventory/azure_rm.yml \
             --list
 
       - name: Windows baseline
+        working-directory: 02-ansible
         run: |
           ansible-playbook 02-ansible/playbooks/2-windows-baseline.yml \
             -i 02-ansible/inventory/azure_rm.yml \

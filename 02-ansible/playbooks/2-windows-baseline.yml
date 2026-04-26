@@ -56,7 +56,7 @@
         state: enabled
 
     - name: "Ensure RDP firewall rule exists and is enabled"
-      community.windows.win_firewall:
+      community.windows.win_firewall_rule:
         name: Remote Desktop - User Mode (TCP-In)
         enabled: true
         state: present
