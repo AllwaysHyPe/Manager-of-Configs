@@ -56,7 +56,7 @@
         state: enabled
 
     - name: "Ensure RDP firewall rule exists and is enabled"
-      ansible.windows.win_firewall:
+      community.windows.win_firewall:
         name: Remote Desktop - User Mode (TCP-In)
         enabled: true
         state: present
