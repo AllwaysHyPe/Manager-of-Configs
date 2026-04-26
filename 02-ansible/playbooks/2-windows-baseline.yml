@@ -70,21 +70,3 @@
       ansible.windows.win_feature:
         name: SNMP-Service
         state: absent
-
-    - name: "Ensure interactive logon requires Ctrl+Alt+Del"
-      community.windows.win_security_policy:
-        section: System Access
-        key: DisableCAD
-        value: "0"
-
-    - name: "Set account lockout threshold to 5 attempts"
-      community.windows.win_security_policy:
-        section: System Access
-        key: LockoutBadCount
-        value: "5"
-
-    - name: "Set account lockout duration to 15 minutes"
-      community.windows.win_security_policy:
-        section: System Access
-        key: LockoutDuration
-        value: "15"
