@@ -24,26 +24,22 @@ locals {
     all = {
       hosts = {
         (azurerm_windows_virtual_machine.main.name) = {
-          ansible_host                     = azurerm_public_ip.main.ip_address
-          ansible_user                     = azurerm_windows_virtual_machine.main.admin_username
-          ansible_connection               = "winrm"
-          ansible_winrm_transport          = "ntlm"
-          ansible_winrm_server_cert_validation = "ignore"
-          ansible_winrm_port               = 5986
-          ansible_winrm_scheme             = "https"
+          ansible_host     = azurerm_public_ip.main.ip_address
+          ansible_user     = azurerm_windows_virtual_machine.main.admin_username
+          ansible_password = "ansible_password_placeholder"
         }
       }
       vars = {
-        environment = "mgr-of-configs"
-        provisioner = "terraform"
-        managed_by  = "ansible"
-        role        = "webserver"
-        choco_agent = "true"
+        ansible_connection                   = "winrm"
+        ansible_winrm_transport              = "ntlm"
+        ansible_winrm_server_cert_validation = "ignore"
+        ansible_winrm_port                   = 5986
+        ansible_winrm_scheme                 = "https"
       }
     }
   }
-
 }
+
 
 # see https://registry.terraform.io/modules/Azure/naming/azurerm/latest
 module "naming" {
