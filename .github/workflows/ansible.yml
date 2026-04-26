@@ -2,6 +2,11 @@ name: Ansible
 
 on:
   workflow_dispatch:
+    inputs:
+      check_mode:
+        description: 'Check mode (no changes)'
+        type: boolean
+        default: true
   push:
     branches: [main]
     paths:
@@ -15,22 +20,20 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+  AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+  ANSIBLE_WINDOWS_PASSWORD: ${{ secrets.WINDOWS_VM_PASSWORD }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   ansible:
     name: Ansible
     runs-on: ubuntu-latest
 
-    env:
-      # These env vars are what the Azure dynamic inventory plugin reads.
-      # Same OIDC credentials Terraform uses — no extra secrets needed.
-      AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-      AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-      ANSIBLE_WINDOWS_PASSWORD: ${{ secrets.WINDOWS_VM_PASSWORD }}
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Azure login
         uses: azure/login@v2
@@ -47,7 +50,7 @@ jobs:
       - name: Install Ansible and dependencies
         run: |
           pip install ansible pywinrm
-          ansible-galaxy collection install -r 02-ansible/requirements.yml
+          ansible-galaxy collection install -r 02-ansible/requirements.yml --force
           pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 
       - name: Verify dynamic inventory
@@ -55,3 +58,9 @@ jobs:
           ansible-inventory \
             -i 02-ansible/inventory/azure_rm.yml \
             --list
+
+      - name: Windows baseline
+        run: |
+          ansible-playbook 02-ansible/playbooks/2-windows-baseline.yml \
+            -i 02-ansible/inventory/azure_rm.yml \
+            ${{ github.event.inputs.check_mode == 'true' && '--check --diff' || '' }}

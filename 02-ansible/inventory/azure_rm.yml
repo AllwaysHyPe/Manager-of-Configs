@@ -1,9 +1,5 @@
 ---
 # Dynamic inventory from Azure.
-# Servers are grouped automatically by their Azure tags.
-# No hosts file to maintain. Add a server with the right tags
-# and the next playbook run picks it up automatically.
-#
 # Prerequisites:
 #   pip3 install ansible ansible-lint pywinrm
 #   ansible-galaxy collection install azure.azcollection
@@ -11,11 +7,6 @@
 
 plugin: azure.azcollection.azure_rm
 auth_source: cli 
-
-# Pull all servers from the mgr-of-configs resource group.
-# Remove or adjust this to target a different scope.
-include_vm_resource_groups:
-  - mgr-of-configs
 
 # Group servers by their role and environment tags.
 # A server tagged role=webserver appears in the group role_webserver.
@@ -33,9 +24,12 @@ keyed_groups:
 conditional_groups:
   ansible_managed: "'ansible' in (tags.managed_by | default(''))"
 
+exclude_host_filters:
+  - tags.managed_by | default('') != 'ansible'
+
 # Connection settings for Windows hosts.
 compose:
-  ansible_host: public_ipv4_address
+  ansible_host: public_ipv4_address | first
   ansible_user: "'vm_admin'"
   ansible_password: "lookup('env', 'ANSIBLE_WINDOWS_PASSWORD')"
   ansible_connection: "'winrm'"

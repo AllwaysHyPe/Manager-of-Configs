@@ -271,19 +271,7 @@ resource "azurerm_virtual_machine_extension" "iis" {
   virtual_machine_id   = azurerm_windows_virtual_machine.main.id
 
   settings = jsonencode({
-    commandToExecute = join("", [
-      "powershell -Command \"",
-      "Install-WindowsFeature -name Web-Server -IncludeManagementTools; ",
-      "Set-Content -Path 'C:\\inetpub\\wwwroot\\index.html' -Value '",
-      "<html><head><title>Manager of Configs</title></head><body>",
-      "<h1>Manager of Configs</h1>",
-      "<h2>${var.prefix}-${local.resource_suffix}</h2>",
-      "<p>Provisioned with Terraform.</p>",
-      "<p>Configured by Ansible.</p>",
-      "<p>Apps by Chocolatey.</p>",
-      "</body></html>",
-      "'\""
-    ])
+    commandToExecute = "powershell -Command \"Install-WindowsFeature -name Web-Server -IncludeManagementTools; Set-Content -Path C:\\inetpub\\wwwroot\\index.html -Value '<html><body><h1>Manager of Configs</h1><p>Provisioned with Terraform.</p><p>Configured by Ansible.</p><p>Applications managed by Chocolatey.</p></body></html>'; $cert = New-SelfSignedCertificate -DnsName $env:COMPUTERNAME -CertStoreLocation cert:\\LocalMachine\\My; New-Item -Path WSMan:\\localhost\\Listener -Transport HTTPS -Address * -CertificateThumbPrint $cert.Thumbprint -Force; Set-Item -Path WSMan:\\localhost\\Service\\Auth\\Basic -Value $true; Set-Service -Name WinRM -StartupType Automatic; Start-Service WinRM; New-NetFirewallRule -Name WinRM-HTTPS -DisplayName WinRM-HTTPS -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 5986\""
   })
 
   tags = {
@@ -292,4 +280,3 @@ resource "azurerm_virtual_machine_extension" "iis" {
     managed_by  = "ansible"
   }
 }
-

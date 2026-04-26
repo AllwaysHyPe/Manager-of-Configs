@@ -6,13 +6,6 @@
 #   ansible-playbook playbooks/0-audit.yml \
 #     -i inventory/azure_rm.yml \
 #     --check --diff
-#
-# What you get:
-#   Green  = already compliant, no action needed
-#   Yellow = would change (drift detected)
-#   Red    = task failed
-#
-# Hand the output to your auditor. That's your compliance report.
 
 - name: CIS Windows Server 2022 — audit
   hosts: role_webserver
@@ -20,7 +13,6 @@
 
   vars:
     # Set cis_level2 to true for database servers or high-security environments.
-    # Level 2 controls are more restrictive and need testing before enabling.
     cis_level1: true
     cis_level2: false
 
