@@ -1,11 +1,5 @@
 ---
-# Windows configuration baseline — the GPO replacement playbook.
-#
-# Every task here maps to something you would previously manage in GPMC.
-# The difference: this file is in Git, has a change history, runs against
-# any Windows server regardless of whether it is domain-joined, and audits
-# itself when run with --check.
-#
+# Windows configuration baseline
 # Usage:
 #   ansible-playbook playbooks/2-windows-baseline.yml -i inventory/azure_rm.yml
 #
@@ -16,42 +10,45 @@
 - name: Windows configuration baseline
   hosts: role_webserver
   gather_facts: true
+  become: true
+  become_method: ansible.builtin.runas
+  become_user: SYSTEM
 
   tasks:
     - name: "Ensure Windows Firewall service is running"
-      win_service:
+      ansible.windows.win_service:
         name: MpsSvc
         state: started
         start_mode: auto
 
     - name: "Ensure Remote Registry service is disabled"
-      win_service:
+      ansible.windows.win_service:
         name: RemoteRegistry
         state: stopped
         start_mode: disabled
 
     - name: "Ensure Windows Update service is running"
-      win_service:
+      ansible.windows.win_service:
         name: wuauserv
         state: started
         start_mode: auto
 
     - name: "Disable TLS 1.0"
-      win_regedit:
+      ansible.windows.win_regedit:
         path: 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.0\Server'
         name: Enabled
         data: 0
         type: dword
 
     - name: "Disable TLS 1.1"
-      win_regedit:
+      ansible.windows.win_regedit:
         path: 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.1\Server'
         name: Enabled
         data: 0
         type: dword
 
     - name: "Enable Windows Firewall for all profiles"
-      win_firewall:
+      ansible.windows.win_firewall:
         profiles:
           - Domain
           - Private
@@ -59,35 +56,35 @@
         state: enabled
 
     - name: "Ensure RDP firewall rule exists and is enabled"
-      win_firewall_rule:
+      ansible.windows.win_firewall:
         name: Remote Desktop - User Mode (TCP-In)
         enabled: true
         state: present
 
     - name: "Ensure Telnet Client is not installed"
-      win_feature:
+      ansible.windows.win_feature:
         name: Telnet-Client
         state: absent
 
     - name: "Ensure SNMP Service is not installed"
-      win_feature:
+      ansible.windows.win_feature:
         name: SNMP-Service
         state: absent
 
     - name: "Ensure interactive logon requires Ctrl+Alt+Del"
-      win_security_policy:
+      ansible.windows.win_security_policy:
         section: System Access
         key: DisableCAD
         value: "0"
 
     - name: "Set account lockout threshold to 5 attempts"
-      win_security_policy:
+      ansible.windows.win_security_policy:
         section: System Access
         key: LockoutBadCount
         value: "5"
 
     - name: "Set account lockout duration to 15 minutes"
-      win_security_policy:
+      ansible.windows.win_security_policy:
         section: System Access
         key: LockoutDuration
         value: "15"

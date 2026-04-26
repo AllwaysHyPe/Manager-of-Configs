@@ -24,6 +24,10 @@ keyed_groups:
 conditional_groups:
   ansible_managed: "'ansible' in (tags.managed_by | default(''))"
 
+plain_host_vars:
+  - name
+  - tags
+
 exclude_host_filters:
   - tags.managed_by | default('') != 'ansible'
 
