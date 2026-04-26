@@ -18,6 +18,31 @@ resource "random_string" "main" {
 
 locals {
   resource_suffix = "${random_pet.main.id}${random_string.main.result}"
+
+  # Ansible inventory generated as a Terraform output.
+  ansible_inventory = {
+    all = {
+      hosts = {
+        (azurerm_windows_virtual_machine.main.name) = {
+          ansible_host                     = azurerm_public_ip.main.ip_address
+          ansible_user                     = azurerm_windows_virtual_machine.main.admin_username
+          ansible_connection               = "winrm"
+          ansible_winrm_transport          = "ntlm"
+          ansible_winrm_server_cert_validation = "ignore"
+          ansible_winrm_port               = 5986
+          ansible_winrm_scheme             = "https"
+        }
+      }
+      vars = {
+        environment = "mgr-of-configs"
+        provisioner = "terraform"
+        managed_by  = "ansible"
+        role        = "webserver"
+        choco_agent = "true"
+      }
+    }
+  }
+
 }
 
 # see https://registry.terraform.io/modules/Azure/naming/azurerm/latest
@@ -36,7 +61,8 @@ resource "azurerm_resource_group" "main" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 }
 
@@ -59,7 +85,8 @@ module "storage" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 }
 
@@ -72,7 +99,8 @@ resource "azurerm_virtual_network" "main" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 }
 
@@ -94,7 +122,8 @@ resource "azurerm_public_ip" "main" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 }
 
@@ -109,9 +138,24 @@ resource "azurerm_network_security_group" "main" {
   # to known ranges and terminate HTTPS at a load balancer or App Gateway.
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 
+}
+
+resource "azurerm_network_security_rule" "allow_ssh" {
+  name                        = "SSH"
+  priority                    = 1001
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "22"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.main.name
 }
 
 resource "azurerm_network_security_rule" "allow_http" {
@@ -161,7 +205,8 @@ resource "azurerm_network_interface" "main" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 }
 
@@ -214,8 +259,8 @@ resource "azurerm_windows_virtual_machine" "main" {
   # automatically. No hosts file to update. No manual registration.
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
-    ansible     = "true"
+    provisioner = "terraform"
+    managed_by  = "ansible"
     role        = "webserver"
     choco_agent = "true"
   }
@@ -247,6 +292,8 @@ resource "azurerm_virtual_machine_extension" "iis" {
 
   tags = {
     environment = "mgr-of-configs"
-    managed_by  = "terraform"
+    provisioner = "terraform"
+    managed_by  = "ansible"
   }
 }
+

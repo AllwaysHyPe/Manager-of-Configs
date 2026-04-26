@@ -18,6 +18,11 @@ output "resource_suffix" {
   value       = local.resource_suffix
 }
 
+output "ansible_inventory" {
+  description = "Ansible inventory generated from Terraform state."
+  value       = yamlencode(local.ansible_inventory)
+}
+
 output "avm_storage_account_name" {
   description = "Name of the AVM-managed storage account"
   value       = module.storage.name

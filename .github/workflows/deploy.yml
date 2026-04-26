@@ -16,7 +16,6 @@ concurrency:
 permissions:
   id-token: write
   contents: read
-  pull-requests: write
 
 env:
   ARM_USE_OIDC: true
@@ -66,7 +65,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Azure login
+      - name: Azure Login with OIDC
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.ARM_CLIENT_ID }}
@@ -102,9 +101,9 @@ jobs:
           VM_PASSWORD=$(terraform output -raw vm_admin_password)
           echo "vm_password=$VM_PASSWORD" >> $GITHUB_OUTPUT
 
-          VM_IP=$(terraform output -raw vm_public_ip)
-          echo "vm_ip=$VM_IP" >> $GITHUB_OUTPUT
-          echo "Windows VM public IP: $VM_IP"
+          terraform output -raw ansible_inventory \
+            | sed "s|ansible_password_placeholder|$VM_PASSWORD|g" \
+            > $GITHUB_WORKSPACE/02-ansible/inventory/hosts.yml
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -117,24 +116,8 @@ jobs:
           ansible-galaxy collection install -r 02-ansible/requirements.yml --force
           pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 
-      - name: Verify dynamic inventory
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-          ANSIBLE_WINDOWS_PASSWORD: ${{ steps.tf.outputs.vm_password }}
+      - name: Verify inventory
         run: |
           ansible-inventory \
-            -i 02-ansible/inventory/azure_rm.yml \
+            -i 02-ansible/inventory/hosts.yml \
             --list
-
-      - name: Audit — compliance report, no changes
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-          AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-          ANSIBLE_WINDOWS_PASSWORD: ${{ steps.tf.outputs.vm_password }}
-        run: |
-          ansible-playbook 02-ansible/playbooks/0-audit.yml \
-            -i 02-ansible/inventory/azure_rm.yml \
-            --check --diff

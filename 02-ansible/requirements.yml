@@ -2,8 +2,9 @@
 collections:
   - 'ansible.windows'
   - 'ansible.utils'
-  - 'community.windows'
-  - 'chocolatey.chocolatey'
   - 'azure.azcollection'
+  - 'chocolatey.chocolatey'
+  - 'cloud.terraform'
   - 'community.general'
+  - 'community.windows'
 ...
