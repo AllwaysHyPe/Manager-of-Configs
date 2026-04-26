@@ -1,19 +1,25 @@
-name: Ansible
+name: Chocolatey
 
 on:
   workflow_dispatch:
     inputs:
+      playbook:
+        description: 'Playbook to run'
+        type: choice
+        options:
+          - 0-bootstrap
+          - 1-packagemgmt
+          - 2-conf-features
+          - bonus-1-legacy-windows
+          - bonus-2-ccm-client
+        default: '1-packagemgmt'
       check_mode:
         description: 'Check mode (no changes)'
         type: boolean
         default: true
-  push:
-    branches: [main]
-    paths:
-      - '02-ansible/**'
 
 concurrency:
-  group: ${{ github.repository }}-ansible-${{ github.ref }}
+  group: ${{ github.repository }}-chocolatey-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -25,11 +31,16 @@ env:
   AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ANSIBLE_WINDOWS_PASSWORD: ${{ secrets.WINDOWS_VM_PASSWORD }}
+  NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  CCM_FQDN: ${{ secrets.CCM_FQDN }}
+  CCM_CLIENT_SALT: ${{ secrets.CCM_CLIENT_SALT }}
+  CCM_SERVICE_SALT: ${{ secrets.CCM_SERVICE_SALT }}
+  C4B_CERT: ${{ secrets.C4B_CERT }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  ansible:
-    name: Ansible
+  chocolatey:
+    name: Chocolatey (${{ github.event.inputs.playbook }})
     runs-on: ubuntu-latest
 
     steps:
@@ -54,13 +65,10 @@ jobs:
           pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 
       - name: Verify dynamic inventory
-        run: |
-          ansible-inventory \
-            -i 02-ansible/inventory/azure_rm.yml \
-            --list
+        run: ansible-inventory -i inventory/azure_rm.yml --list
 
-      - name: Windows baseline
+      - name: Run playbook
         run: |
-          ansible-playbook 02-ansible/playbooks/2-windows-baseline.yml \
-            -i 02-ansible/inventory/azure_rm.yml \
+          ansible-playbook playbooks/${{ github.event.inputs.playbook }}.yml \
+            -i inventory/azure_rm.yml \
             ${{ github.event.inputs.check_mode == 'true' && '--check --diff' || '' }}
