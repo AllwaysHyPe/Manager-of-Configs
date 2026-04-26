@@ -1,7 +1,17 @@
 ---
 - name: 'Install and configure Chocolatey Agent'
-  hosts: 'choco_licensed'
+  hosts: role_webserver
+  gather_facts: false
+  become: true
+  become_method: runas
+  become_user: SYSTEM
   
+  vars:
+    ccm_fqdn: "{{ lookup('ansible.builtin.env', 'CCM_FQDN') }}"
+    ccm_client_salt: "{{ lookup('ansible.builtin.env', 'CCM_CLIENT_SALT') }}"
+    ccm_server_salt: "{{ lookup('ansible.builtin.env', 'CCM_SERVICE_SALT') }}"
+    ccm_service_url: "https://{{ ccm_fqdn }}:24020/ChocolateyManagementService"
+
   tasks:
     - name: Verify Mandatory Vars
       assert:
@@ -17,39 +27,39 @@
         quiet: true
 
     - name: "Ensure 'chocolatey-agent' package is installed"
-      win_chocolatey:
+      chocolatey.chocolatey.win_chocolatey:
         name: 'chocolatey-agent'
         version: '{{ agent_version | default(omit) }}'
         state: '{{ "latest" if agent_version is undefined or agent_version == omit else "downgrade" }}'
 
     - name: 'Set choco CentralManagementServiceUrl'
-      win_chocolatey_config:
+      chocolatey.chocolatey.win_chocolatey_config:
         name: 'CentralManagementServiceUrl'
         state: present
         value: '{{ ccm_service_url }}'
       notify: Restart Chocolatey Agent
 
     - name: 'Enable choco feature useChocolateyCentralManagement'
-      win_chocolatey_feature:
+      chocolatey.chocolatey.win_chocolatey_feature:
         name: useChocolateyCentralManagement
         state: enabled
       notify: Restart Chocolatey Agent
 
     - name: 'Enable choco feature useChocolateyCentralManagementDeployments'
-      win_chocolatey_feature:
+      chocolatey.chocolatey.win_chocolatey_feature:
         name: useChocolateyCentralManagementDeployments
         state: enabled
       notify: Restart Chocolatey Agent
 
     - name: 'Set CCM Client Salt'
-      win_chocolatey_config:
+      chocolatey.chocolatey.win_chocolatey_config:
         name: 'centralManagementClientCommunicationSaltAdditivePassword'
         state: present
         value: '{{ ccm_client_salt }}'
       notify: Restart Chocolatey Agent
 
     - name: 'Set CCM Service Salt'
-      win_chocolatey_config:
+      chocolatey.chocolatey.win_chocolatey_config:
         name: 'centralManagementServiceCommunicationSaltAdditivePassword'
         state: present
         value: '{{ ccm_server_salt }}'

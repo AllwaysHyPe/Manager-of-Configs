@@ -1,40 +1,78 @@
 ---
 - name: 'Demo Bootstrapping'
-  hosts: 'windows_servers'
+  hosts: 'role_webserver'
+  gather_facts: true
+  become: true
+  become_method: runas
+  become_user: SYSTEM
   
+  vars:
+    nexus_base: 'https://chocolatey.allwayshype.com/nexus/repository'
+    choco_install_script: '{{ nexus_base }}/choco-install/ChocolateyInstall.ps1'
+    choco_nupkg_url: '{{ nexus_base }}/ChocolateyInternal/index.json'
+    nexus_password: "{{ lookup('ansible.builtin.env', 'NEXUS_PASSWORD') }}"
+    c4b_cert: "{{ lookup('ansible.builtin.env', 'C4B_CERT') }}"
+
   tasks:
-    - name: 'Ensure Chocolatey itself is installed, without relying on the Wi-Fi'
-      win_chocolatey:
-        name: 'chocolatey'
-        bootstrap_script: 'http://sion.holonet.nz:8624/endpoints/bootstrap/content/chocolatey-install.ps1'
+
+   - name: Trust Chocolatey self-signed certificate
+      ansible.windows.win_powershell:
+        script: |
+          $CertBase64 = $AnsibleCertData
+          $CertBytes = [System.Convert]::FromBase64String($CertBase64)
+          $Cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($CertBytes)
+
+          foreach ($StoreName in @('Root', 'TrustedPeople')) {
+              $Store = [System.Security.Cryptography.X509Certificates.X509Store]::new(
+                  $StoreName,
+                  [System.Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine
+              )
+              $Store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+
+              if ($Cert.Thumbprint -notin $Store.Certificates.Thumbprint) {
+                  $Store.Add($Cert)
+                  $Ansible.Changed = $true
+              }
+
+              $Store.Close()
+          }
+        parameters:
+          $AnsibleCertData: "{{ c4b_cert }}"
+
+    - name: Ensure Chocolatey is installed from internal repository
+      chocolatey.chocolatey.win_chocolatey:
+        name: chocolatey
+        source: '{{ choco_install_script }}'
       environment:
-        chocolateyDownloadUrl: 'http://sion.holonet.nz:8624/endpoints/bootstrap/content/chocolatey.2.7.1.nupkg'
+        chocolateyDownloadUrl: '{{ nexus_base }}/ChocolateyInternal/v3/content/chocolatey/latest/chocolatey.latest.nupkg'
 
-    - name: 'Add internal repo'
-      win_chocolatey_source:
-        name: 'internal-chocolatey'
-        source: 'http://sion.holonet.nz:8624/nuget/internal-chocolatey'
+    - name: Add ChocolateyInternal source
+      chocolatey.chocolatey.win_chocolatey_source:
+        name: ChocolateyInternal
+        source: '{{ nexus_url }}'
+        source_username: chocouser
+        source_password: '{{ nexus_password }}'
         priority: 1
-        state: 'present'
+        state: present
 
-    - name: 'Disable default community repo'
-      win_chocolatey_source:
-        name: 'chocolatey'
-        state: 'disabled'
+    - name: Disable default Chocolatey community repository
+      chocolatey.chocolatey.win_chocolatey_source:
+        name: Chocolatey
+        state: disabled
 
-    - name: 'Ensure latest Chocolatey Business License package is installed'
-      win_chocolatey:
-        name: 'chocolatey-license'
-        state: 'present'
+    - name: Ensure chocolatey-license is installed
+      chocolatey.chocolatey.win_chocolatey:
+        name: chocolatey-license
+        state: present
 
-    - name: 'Ensure Chocolatey Licensed Extension is installed'
-      win_chocolatey:
-        name: 'chocolatey.extension'
-        state: 'present'
-        source: 'internal-chocolatey'
+    - name: Ensure chocolatey.extension is installed
+      chocolatey.chocolatey.win_chocolatey:
+        name: chocolatey.extension
+        state: present
+        source: ChocolateyInternal
 
-    - name: 'Disable licensed packages repo'
-      win_chocolatey_source:
-        name: 'chocolatey.licensed'
-        state: 'disabled'
+    - name: Disable licensed packages repository
+      chocolatey.chocolatey.win_chocolatey_source:
+        name: chocolatey.licensed
+        state: disabled
 ...
