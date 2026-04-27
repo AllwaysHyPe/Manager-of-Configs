@@ -6,7 +6,7 @@
 #   az login
 
 plugin: azure.azcollection.azure_rm
-auth_source: cli 
+auth_source: cli
 
 include_vm_resource_groups:
   - "*"
@@ -20,9 +20,6 @@ hostvar_expressions:
   ansible_host: "resource_group + '-' + name if resource_type == 'Microsoft.HybridCompute/machines' else (public_ipv4_address | first)"
   ansible_ssh_common_args: "'-F /tmp/' + resource_group + '-' + name + '/ssh_config' if resource_type == 'Microsoft.HybridCompute/machines' else ''"
 
-# Group servers by their role and environment tags.
-# A server tagged role=webserver appears in the group role_webserver.
-# A server tagged environment=mgr-of-configs appears in env_mgr_of_configs.
 keyed_groups:
   - key: tags.role
     prefix: role
@@ -31,23 +28,19 @@ keyed_groups:
     prefix: env
     separator: '_'
 
-# Only include servers that have the managed_by=ansible tag.
-# This prevents playbooks from accidentally targeting unmanaged servers.
 conditional_groups:
   ansible_managed: "'ansible' in (tags.managed_by | default(''))"
 
 exclude_host_filters:
   - tags.managed_by | default('') != 'ansible'
 
-# Connection settings for Windows hosts.
 compose:
-  ansible_host: public_ipv4_address | first
   ansible_user: "'vm_admin' if resource_type == 'Microsoft.Compute/virtualMachines' else lookup('env', 'SRV_ADMIN_USER')"
-  ansible_password: "lookup('env', 'ANSIBLE_WINDOWS_PASSWORD')"
-  ansible_connection: "'ssh' if resource_type == 'Microsoft.HybridCompute/machines' else 'winrm'"
-  ansible_winrm_transport: "'ntlm'"
-  ansible_winrm_server_cert_validation: "'ignore'"
-  ansible_winrm_port: "5986"
-  ansible_winrm_scheme: "'https'"
-  ansible_shell_type: "'powershell' if resource_type == 'Microsoft.HybridCompute/machines' else omit"
+  ansible_password: "lookup('env', 'ANSIBLE_WINDOWS_PASSWORD') if resource_type == 'Microsoft.Compute/virtualMachines' else lookup('env', 'SRV_ADMIN_PASSWORD')"
+  ansible_connection: "'winrm' if resource_type == 'Microsoft.Compute/virtualMachines' else 'ssh'"
+  ansible_winrm_transport: "'ntlm' if resource_type == 'Microsoft.Compute/virtualMachines' else omit"
+  ansible_winrm_server_cert_validation: "'ignore' if resource_type == 'Microsoft.Compute/virtualMachines' else omit"
+  ansible_winrm_port: "5986 if resource_type == 'Microsoft.Compute/virtualMachines' else omit"
+  ansible_winrm_scheme: "'https' if resource_type == 'Microsoft.Compute/virtualMachines' else omit"
+  ansible_shell_type: "omit if resource_type == 'Microsoft.Compute/virtualMachines' else 'powershell'"
 ...
