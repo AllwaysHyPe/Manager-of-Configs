@@ -39,12 +39,20 @@
         parameters:
           $AnsibleCertData: "{{ c4b_cert }}"
 
-    - name: Ensure Chocolatey is installed from internal repository
-      chocolatey.chocolatey.win_chocolatey:
-        name: chocolatey
-        source: '{{ choco_install_script }}'
-      environment:
-        chocolateyDownloadUrl: '{{ nexus_base }}/ChocolateyInternal/v3/content/chocolatey/latest/chocolatey.latest.nupkg'
+    - name: Install Chocolatey from internal repository
+      ansible.windows.win_powershell:
+        script: |
+          [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+          $webClient = New-Object System.Net.WebClient
+          $webClient.Credentials = [System.Net.NetworkCredential]::new('chocouser', $Password)
+          $script = $webClient.DownloadString($InstallScript)
+          $env:chocolateyDownloadUrl = $NupkgUrl
+          & ([scriptblock]::Create($script))
+        parameters:
+          $InstallScript: '{{ choco_install_script }}'
+          $NupkgUrl: '{{ nexus_base }}/ChocolateyInternal/v3/content/chocolatey/latest/chocolatey.latest.nupkg'
+          $Password: '{{ nexus_password }}'
+      no_log: true
 
     - name: Add ChocolateyInternal source
       chocolatey.chocolatey.win_chocolatey_source:
