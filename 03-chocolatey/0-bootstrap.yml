@@ -64,34 +64,21 @@
           $NupkgUrl: '{{ nexus_base }}/ChocolateyInternal/v3/content/chocolatey/latest/chocolatey.latest.nupkg'
           $Password: '{{ nexus_password }}'
       no_log: true
+      
+    - name: Configure sources and install Chocolatey packages
+      ansible.windows.win_powershell:
+        script: |
+          $env:PATH = 'C:\ProgramData\chocolatey\bin;' + $env:PATH
 
-    - name: Add ChocolateyInternal source
-      chocolatey.chocolatey.win_chocolatey_source:
-        name: ChocolateyInternal
-        source: '{{ nexus_url }}'
-        source_username: chocouser
-        source_password: '{{ nexus_password }}'
-        priority: 1
-        state: present
+          choco source add --name='ChocolateyInternal' --source=$NexusUrl --user='chocouser' --password=$Password --priority=1 --allow-self-service -y
 
-    - name: Disable default Chocolatey community repository
-      chocolatey.chocolatey.win_chocolatey_source:
-        name: Chocolatey
-        state: disabled
+          choco source disable --name='Chocolatey' -y
+          choco source disable --name='chocolatey.licensed' -y
 
-    - name: Ensure chocolatey-license is installed
-      chocolatey.chocolatey.win_chocolatey:
-        name: chocolatey-license
-        state: present
-
-    - name: Ensure chocolatey.extension is installed
-      chocolatey.chocolatey.win_chocolatey:
-        name: chocolatey.extension
-        state: present
-        source: ChocolateyInternal
-
-    - name: Disable licensed packages repository
-      chocolatey.chocolatey.win_chocolatey_source:
-        name: chocolatey.licensed
-        state: disabled
+          choco upgrade chocolatey-license --confirm --source='ChocolateyInternal' --no-progress
+          choco upgrade chocolatey.extension --confirm --source='ChocolateyInternal' --no-progress
+        parameters:
+          $NexusUrl: '{{ nexus_url }}'
+          $Password: '{{ nexus_password }}'
+      no_log: true
 ...
