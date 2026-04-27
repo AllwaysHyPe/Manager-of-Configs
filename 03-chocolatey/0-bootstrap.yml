@@ -1,7 +1,7 @@
 ---
 - name: 'Demo Bootstrapping'
   hosts: 'role_webserver'
-  gather_facts: true
+  gather_facts: false
   become: true
   become_method: runas
   become_user: SYSTEM
@@ -16,6 +16,7 @@
   pre_tasks:
     - name: Set up Arc SSH proxy
       azure.azcollection.azure_rm_arcssh:
+        auth_source: cli
         inventory_hostname: "{{ item }}"
         ansible_host: "{{ hostvars[item].ansible_host }}"
         local_user: "{{ hostvars[item].ansible_user }}"
@@ -24,9 +25,12 @@
         ssh_config_file: "/tmp/{{ hostvars[item].resource_group }}-{{ item }}/ssh_config"
         ssh_relay_file: "/tmp/{{ hostvars[item].resource_group }}-{{ item }}/relay_info"
         ssh_proxy_folder: "~/.clientsshproxy"
-      loop: "{{ groups['type_Microsoft_HybridCompute_machines'] | default([]) }}"
+      loop: "{{ groups['arc_servers'] | default([]) }}"
       delegate_to: localhost
       run_once: true
+
+    - name: Gather facts
+      ansible.builtin.setup:
 
   tasks:
     - name: Trust Chocolatey self-signed certificate
