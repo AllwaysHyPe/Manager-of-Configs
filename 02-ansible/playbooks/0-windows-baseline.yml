@@ -36,7 +36,7 @@
         name: MpsSvc
         state: started
         start_mode: auto
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -45,7 +45,7 @@
         name: RemoteRegistry
         state: stopped
         start_mode: disabled
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -54,7 +54,7 @@
         name: wuauserv
         state: started
         start_mode: auto
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -64,7 +64,7 @@
         name: Enabled
         data: 0
         type: dword
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -74,7 +74,7 @@
         name: Enabled
         data: 0
         type: dword
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -85,7 +85,7 @@
           - Private
           - Public
         state: enabled
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -94,7 +94,7 @@
         name: Remote Desktop - User Mode (TCP-In)
         enabled: true
         state: present
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -102,7 +102,7 @@
       ansible.windows.win_feature:
         name: Telnet-Client
         state: absent
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
 
@@ -110,6 +110,6 @@
       ansible.windows.win_feature:
         name: SNMP-Service
         state: absent
-      become: "{{ ansible_connection == 'winrm' }}"
+      become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
