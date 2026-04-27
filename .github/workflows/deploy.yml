@@ -16,7 +16,6 @@ concurrency:
 permissions:
   id-token: write
   contents: read
-  secrets: write
 
 env:
   ARM_USE_OIDC: true
@@ -108,7 +107,7 @@ jobs:
 
       - name: Update WINDOWS_VM_PASSWORD secret
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           gh secret set WINDOWS_VM_PASSWORD --body "${{ steps.tf.outputs.vm_password }}"
 
