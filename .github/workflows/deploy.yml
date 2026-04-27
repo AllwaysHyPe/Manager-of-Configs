@@ -16,6 +16,7 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+  secrets: write
 
 env:
   ARM_USE_OIDC: true
@@ -104,6 +105,12 @@ jobs:
           terraform output -raw ansible_inventory \
             | sed "s|ansible_password_placeholder|$VM_PASSWORD|g" \
             > $GITHUB_WORKSPACE/02-ansible/inventory/hosts.yml
+
+      - name: Update WINDOWS_VM_PASSWORD secret
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh secret set WINDOWS_VM_PASSWORD --body "${{ steps.tf.outputs.vm_password }}"
 
       - name: Set up Python
         uses: actions/setup-python@v5
