@@ -8,6 +8,18 @@
 plugin: azure.azcollection.azure_rm
 auth_source: cli 
 
+include_vm_resource_groups:
+  - "*"
+
+include_arc_resource_groups:
+  - mgr-of-configs
+
+plain_host_names: true
+
+hostvar_expressions:
+  ansible_host: "resource_group + '-' + name if resource_type == 'Microsoft.HybridCompute/machines' else (public_ipv4_address | first)"
+  ansible_ssh_common_args: "'-F /tmp/' + resource_group + '-' + name + '/ssh_config' if resource_type == 'Microsoft.HybridCompute/machines' else ''"
+
 # Group servers by their role and environment tags.
 # A server tagged role=webserver appears in the group role_webserver.
 # A server tagged environment=mgr-of-configs appears in env_mgr_of_configs.
@@ -24,20 +36,18 @@ keyed_groups:
 conditional_groups:
   ansible_managed: "'ansible' in (tags.managed_by | default(''))"
 
-plain_host_vars:
-  - name
-  - tags
-
 exclude_host_filters:
   - tags.managed_by | default('') != 'ansible'
 
 # Connection settings for Windows hosts.
 compose:
   ansible_host: public_ipv4_address | first
-  ansible_user: "'vm_admin'"
+  ansible_user: "'vm_admin' if resource_type == 'Microsoft.Compute/virtualMachines' else lookup('env', 'SRV_ADMIN_USER')"
   ansible_password: "lookup('env', 'ANSIBLE_WINDOWS_PASSWORD')"
-  ansible_connection: "'winrm'"
+  ansible_connection: "'ssh' if resource_type == 'Microsoft.HybridCompute/machines' else 'winrm'"
   ansible_winrm_transport: "'ntlm'"
   ansible_winrm_server_cert_validation: "'ignore'"
   ansible_winrm_port: "5986"
   ansible_winrm_scheme: "'https'"
+  ansible_shell_type: "'powershell' if resource_type == 'Microsoft.HybridCompute/machines' else omit"
+...

@@ -25,6 +25,10 @@ env:
   AZURE_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   AZURE_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   ANSIBLE_WINDOWS_PASSWORD: ${{ secrets.WINDOWS_VM_PASSWORD }}
+  SRV_ADMIN_USER: ${{ secrets.SRV_ADMIN_USER }}
+  SRV_ADMIN_PASSWORD: ${{ secrets.SRV_ADMIN_PASSWORD }}
+  ARC_SP_CLIENT_ID: ${{ secrets.ARC_SP_CLIENT_ID }}
+  ARC_SP_CLIENT_SECRET: ${{ secrets.ARC_SP_CLIENT_SECRET }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -61,6 +65,6 @@ jobs:
 
       - name: Windows baseline
         run: |
-          ansible-playbook 02-ansible/playbooks/2-windows-baseline.yml \
+          ansible-playbook 02-ansible/playbooks/0-windows-baseline.yml \
             -i 02-ansible/inventory/azure_rm.yml \
             ${{ github.event.inputs.check_mode == 'true' && '--check --diff' || '' }}

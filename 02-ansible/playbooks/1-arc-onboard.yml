@@ -1,0 +1,32 @@
+---
+# Enrolls Windows servers into Azure Arc.
+# Targets servers tagged managed_by=ansible that are not yet Arc-enrolled.
+# Uses the azure.azcollection.azure_arc role which handles idempotency —
+# servers already enrolled are skipped automatically.
+#
+# Required GitHub secrets:
+#   ARC_SP_CLIENT_ID, ARC_SP_CLIENT_SECRET, ARM_TENANT_ID, ARM_SUBSCRIPTION_ID
+
+- name: Azure Arc enrollment
+  hosts: role_webserver
+  gather_facts: true
+  become: true
+  become_method: runas
+  become_user: SYSTEM
+
+  vars:
+    auth_source: env
+    azure_arc_resource_group: mgr-of-configs
+    azure_arc_subscription_id: "{{ lookup('ansible.builtin.env', 'ARM_SUBSCRIPTION_ID') }}"
+    azure_arc_tenant_id: "{{ lookup('ansible.builtin.env', 'ARM_TENANT_ID') }}"
+    azure_arc_location: westus
+    azure_arc_service_principal_id: "{{ lookup('ansible.builtin.env', 'ARC_SP_CLIENT_ID') }}"
+    azure_arc_service_principal_secret: "{{ lookup('ansible.builtin.env', 'ARC_SP_CLIENT_SECRET') }}"
+    azure_arc_tags:
+      environment: mgr-of-configs
+      managed_by: ansible
+      provisioner: terraform
+
+  roles:
+    - role: azure.azcollection.azure_arc
+...

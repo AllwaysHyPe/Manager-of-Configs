@@ -16,6 +16,21 @@
     cis_level1: true
     cis_level2: false
 
+  pre_tasks:
+   - name: Set up Arc SSH proxy
+     azure.azcollection.azure_rm_arcssh:
+       inventory_hostname: "{{ item }}"
+       ansible_host: "{{ hostvars[item].ansible_host }}"
+       local_user: "{{ hostvars[item].ansible_user }}"
+       resource_group: "{{ hostvars[item].resource_group }}"
+       resource_type: "{{ hostvars[item].resource_type }}"
+       ssh_config_file: "/tmp/{{ hostvars[item].resource_group }}-{{ item }}/ssh_config"
+       ssh_relay_file: "/tmp/{{ hostvars[item].resource_group }}-{{ item }}/relay_info"
+       ssh_proxy_folder: "~/.clientsshproxy"
+     loop: "{{ groups['type_Microsoft_HybridCompute_machines'] | default([]) }}"
+     delegate_to: localhost
+     run_once: true
+
   tasks:
 
     - name: "CIS 1.1.1 | L1 | Ensure password history is 24 or more"
