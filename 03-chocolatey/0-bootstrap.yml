@@ -5,6 +5,8 @@
   become: true
   become_method: runas
   become_user: SYSTEM
+  environment:
+        PATH: 'C:\ProgramData\chocolatey\bin;{{ ansible_env.PATH }}'
   
   vars:
     nexus_base: 'https://chocolatey.allwayshype.com/nexus/repository'
