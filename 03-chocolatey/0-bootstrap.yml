@@ -5,8 +5,6 @@
   become: true
   become_method: runas
   become_user: SYSTEM
-  environment:
-    PATH: 'C:\ProgramData\chocolatey\bin;C:\Windows\System32;C:\Windows'
   
   vars:
     nexus_base: 'https://chocolatey.allwayshype.com/nexus/repository'
@@ -50,6 +48,17 @@
           $script = $webClient.DownloadString($InstallScript)
           $env:chocolateyDownloadUrl = $NupkgUrl
           & ([scriptblock]::Create($script))
+
+          # Ensure choco.exe is in the system PATH permanently
+          $ChocoBin = 'C:\ProgramData\chocolatey\bin'
+          $CurrentPath = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine')
+          if ($ChocoBin -notin ($CurrentPath -split ';')) {
+              [System.Environment]::SetEnvironmentVariable(
+                  'PATH',
+                  "$CurrentPath;$ChocoBin",
+                  'Machine'
+              )
+          }
         parameters:
           $InstallScript: '{{ choco_install_script }}'
           $NupkgUrl: '{{ nexus_base }}/ChocolateyInternal/v3/content/chocolatey/latest/chocolatey.latest.nupkg'
