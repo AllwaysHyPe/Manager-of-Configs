@@ -17,6 +17,10 @@ on:
         description: 'Check mode (no changes)'
         type: boolean
         default: true
+  push:
+    branches: [main]
+    paths:
+      - '03-chocolatey/**'
 
 concurrency:
   group: ${{ github.repository }}-chocolatey-${{ github.ref }}
@@ -65,10 +69,13 @@ jobs:
           pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
 
       - name: Verify dynamic inventory
-        run: ansible-inventory -i inventory/azure_rm.yml --list
+        run: |
+          ansible-inventory \
+            -i 02-ansible/inventory/azure_rm.yml \
+            --list
 
       - name: Run playbook
         run: |
-          ansible-playbook playbooks/${{ github.event.inputs.playbook }}.yml \
-            -i inventory/azure_rm.yml \
+          ansible-playbook 03-chocolatey/${{ github.event.inputs.playbook }}.yml \
+            -i 02-ansible/inventory/azure_rm.yml \
             ${{ github.event.inputs.check_mode == 'true' && '--check --diff' || '' }}

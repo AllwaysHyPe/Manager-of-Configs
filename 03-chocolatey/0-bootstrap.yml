@@ -8,14 +8,14 @@
   
   vars:
     nexus_base: 'https://chocolatey.allwayshype.com/nexus/repository'
+    nexus_url: '{{ nexus_base }}/ChocolateyInternal/index.json'
     choco_install_script: '{{ nexus_base }}/choco-install/ChocolateyInstall.ps1'
-    choco_nupkg_url: '{{ nexus_base }}/ChocolateyInternal/index.json'
     nexus_password: "{{ lookup('ansible.builtin.env', 'NEXUS_PASSWORD') }}"
     c4b_cert: "{{ lookup('ansible.builtin.env', 'C4B_CERT') }}"
 
   tasks:
 
-   - name: Trust Chocolatey self-signed certificate
+    - name: Trust Chocolatey self-signed certificate
       ansible.windows.win_powershell:
         script: |
           $CertBase64 = $AnsibleCertData
