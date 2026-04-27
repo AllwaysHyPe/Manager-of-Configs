@@ -76,6 +76,9 @@ jobs:
             -i 02-ansible/inventory/azure_rm.yml \
             --list
 
+      - name: Install Az SSH extension
+        run: az extension add --name ssh --yes
+
       - name: Run playbook
         run: |
           ansible-playbook 03-chocolatey/${{ github.event.inputs.playbook }}.yml \
