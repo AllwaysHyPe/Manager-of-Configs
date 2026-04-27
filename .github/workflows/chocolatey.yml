@@ -43,6 +43,7 @@ env:
   CCM_SERVICE_SALT: ${{ secrets.CCM_SERVICE_SALT }}
   C4B_CERT: ${{ secrets.C4B_CERT }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ANSIBLE_CONFIG: 02-ansible/ansible.cfg
 
 jobs:
   chocolatey:
