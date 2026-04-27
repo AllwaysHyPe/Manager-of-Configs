@@ -9,7 +9,7 @@
 
 - name: Windows configuration baseline
   hosts: role_webserver
-  gather_facts: true
+  gather_facts: false
 
   pre_tasks:
     - name: Set up Arc SSH proxy
@@ -26,24 +26,36 @@
       delegate_to: localhost
       run_once: true
 
+    - name: Gather facts
+      ansible.builtin.setup:
+
   tasks:
     - name: "Ensure Windows Firewall service is running"
       ansible.windows.win_service:
         name: MpsSvc
         state: started
         start_mode: auto
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Ensure Remote Registry service is disabled"
       ansible.windows.win_service:
         name: RemoteRegistry
         state: stopped
         start_mode: disabled
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Ensure Windows Update service is running"
       ansible.windows.win_service:
         name: wuauserv
         state: started
         start_mode: auto
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Disable TLS 1.0"
       ansible.windows.win_regedit:
@@ -51,6 +63,9 @@
         name: Enabled
         data: 0
         type: dword
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Disable TLS 1.1"
       ansible.windows.win_regedit:
@@ -58,6 +73,9 @@
         name: Enabled
         data: 0
         type: dword
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Enable Windows Firewall for all profiles"
       ansible.windows.win_firewall:
@@ -66,19 +84,31 @@
           - Private
           - Public
         state: enabled
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Ensure RDP firewall rule exists and is enabled"
       community.windows.win_firewall_rule:
         name: Remote Desktop - User Mode (TCP-In)
         enabled: true
         state: present
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Ensure Telnet Client is not installed"
       ansible.windows.win_feature:
         name: Telnet-Client
         state: absent
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM
 
     - name: "Ensure SNMP Service is not installed"
       ansible.windows.win_feature:
         name: SNMP-Service
         state: absent
+      become: "{{ ansible_connection == 'winrm' }}"
+      become_method: ansible.builtin.runas
+      become_user: SYSTEM

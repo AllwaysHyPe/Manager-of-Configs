@@ -30,6 +30,7 @@ env:
   ARC_SP_CLIENT_ID: ${{ secrets.ARC_SP_CLIENT_ID }}
   ARC_SP_CLIENT_SECRET: ${{ secrets.ARC_SP_CLIENT_SECRET }}
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  ANSIBLE_CONFIG: 02-ansible/ansible.cfg
 
 jobs:
   ansible:
