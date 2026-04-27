@@ -23,9 +23,14 @@ keyed_groups:
   - key: tags.environment
     prefix: env
     separator: '_'
+  - key: resource_type
+    prefix: type
+    separator: '_'
 
 conditional_groups:
   ansible_managed: "'ansible' in (tags.managed_by | default(''))"
+  arc_servers: "resource_type == 'Microsoft.HybridCompute/machines'"
+  azure_vms: "resource_type == 'Microsoft.Compute/virtualMachines'"
 
 exclude_host_filters:
   - tags.managed_by | default('') != 'ansible'

@@ -22,7 +22,7 @@
         ssh_config_file: "/tmp/{{ hostvars[item].resource_group }}-{{ item }}/ssh_config"
         ssh_relay_file: "/tmp/{{ hostvars[item].resource_group }}-{{ item }}/relay_info"
         ssh_proxy_folder: "~/.clientsshproxy"
-      loop: "{{ groups['type_Microsoft_HybridCompute_machines'] | default([]) }}"
+      loop: "{{ groups['arc_servers'] | default([]) }}"
       delegate_to: localhost
       run_once: true
 
