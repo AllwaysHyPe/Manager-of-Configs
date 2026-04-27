@@ -34,6 +34,10 @@ output "vm_admin_password" {
   value       = random_password.vm_admin.result
 }
 
+output "key_vault_name" {
+  value = azurerm_key_vault.main.name
+}
+
 output "vm_public_ip" {
   description = "Public IP address of the Windows VM"
   value       = azurerm_public_ip.main.ip_address
