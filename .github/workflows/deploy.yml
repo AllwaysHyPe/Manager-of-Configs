@@ -102,8 +102,14 @@ jobs:
           echo "vm_password=$VM_PASSWORD" >> $GITHUB_OUTPUT
 
           terraform output -raw ansible_inventory \
-            | sed "s|ansible_password_placeholder|$VM_PASSWORD|g" \
-            > $GITHUB_WORKSPACE/02-ansible/inventory/hosts.yml
+            | python3 -c "
+          import sys
+          content = sys.stdin.read()
+          import os
+          print(content.replace('ansible_password_placeholder', os.environ['VM_PASSWORD']))
+          " > $GITHUB_WORKSPACE/02-ansible/inventory/hosts.yml
+        env:
+          VM_PASSWORD: ${{ steps.tf.outputs.vm_password }}
 
       - name: Update WINDOWS_VM_PASSWORD secret
         env:
