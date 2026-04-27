@@ -70,7 +70,6 @@
       become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
-      when: ansible_connection == 'winrm'
 
     - name: "Disable TLS 1.1"
       ansible.windows.win_regedit:
@@ -81,7 +80,6 @@
       become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
-      when: ansible_connection == 'winrm'
 
     - name: "Enable Windows Firewall for all profiles"
       ansible.windows.win_firewall:
@@ -93,7 +91,6 @@
       become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
-      when: ansible_connection == 'winrm'
 
     - name: "Ensure RDP firewall rule exists and is enabled"
       community.windows.win_firewall_rule:
@@ -103,7 +100,6 @@
       become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
-      when: ansible_connection == 'winrm'
 
     - name: "Ensure Telnet Client is not installed"
       ansible.windows.win_feature:
@@ -112,7 +108,6 @@
       become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
-      when: ansible_connection == 'winrm'
 
     - name: "Ensure SNMP Service is not installed"
       ansible.windows.win_feature:
@@ -121,4 +116,3 @@
       become: "{{ (ansible_connection == 'winrm') | bool }}"
       become_method: ansible.builtin.runas
       become_user: SYSTEM
-      when: ansible_connection == 'winrm'
