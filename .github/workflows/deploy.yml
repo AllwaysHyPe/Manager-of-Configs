@@ -94,28 +94,40 @@ jobs:
         working-directory: 01-terraform/03-windows-vm
         run: terraform apply tfplan
 
+
       - name: Capture Terraform outputs
         id: tf
         working-directory: 01-terraform/03-windows-vm
         run: |
-          VM_PASSWORD=$(terraform output -raw vm_admin_password)
+          echo "kv_name=$(terraform output -raw key_vault_name)" >> $GITHUB_OUTPUT
+
+      - name: Retrieve VM password from Key Vault
+        id: kv
+        run: |
+          VM_PASSWORD=$(az keyvault secret show \
+            --vault-name ${{ steps.tf.outputs.kv_name }} \
+            --name vm-admin-password \
+            --query value -o tsv)
+          echo "::add-mask::$VM_PASSWORD"
           echo "vm_password=$VM_PASSWORD" >> $GITHUB_OUTPUT
 
-          terraform output -raw ansible_inventory \
+      - name: Write Ansible inventory
+        run: |
+          terraform -chdir=01-terraform/03-windows-vm output -raw ansible_inventory \
             | python3 -c "
-          import sys
+          import sys, os
           content = sys.stdin.read()
-          import os
           print(content.replace('ansible_password_placeholder', os.environ['VM_PASSWORD']))
-          " > $GITHUB_WORKSPACE/02-ansible/inventory/hosts.yml
+          " > 02-ansible/inventory/hosts.yml
         env:
-          VM_PASSWORD: ${{ steps.tf.outputs.vm_password }}
+          VM_PASSWORD: ${{ steps.kv.outputs.vm_password }}
 
       - name: Update WINDOWS_VM_PASSWORD secret
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          gh secret set WINDOWS_VM_PASSWORD --body "${{ steps.tf.outputs.vm_password }}"
+          gh secret set WINDOWS_VM_PASSWORD \
+            --body "${{ steps.kv.outputs.vm_password }}"
 
       - name: Set up Python
         uses: actions/setup-python@v5

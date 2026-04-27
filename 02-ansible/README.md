@@ -21,6 +21,50 @@ No need to throw away your PowerShell scripts either — you can call them from 
     ├── 1-arc-onboard.yml
     └── 2-windows-baseline.yml
 ```
+## Local setup
+
+The Azure collection requires Python 3.12. The collection doesn't support Python 3.13 or 3.14 yet — you'll get `AzureCliCredential is not defined` errors if you try.
+
+```bash
+# Install pyenv if you don't have it
+brew install pyenv
+pyenv install 3.12
+pyenv local 3.12
+
+# Create a fresh venv from inside the 02-ansible directory
+cd 02-ansible
+rm -rf .venv
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install ansible pywinrm
+ansible-galaxy collection install -r requirements.yml --force
+pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/requirements.txt
+```
+
+Make sure you're logged into Azure CLI before running any inventory or playbook commands:
+
+```bash
+az login
+az account set --subscription '<your sub id>'
+```
+
+Set the required environment variables for Arc server credentials:
+
+```bash
+export SRV_ADMIN_USER="Administrator"
+export SRV_ADMIN_PASSWORD="<Arc server Administrator password>"
+export ANSIBLE_WINDOWS_PASSWORD="<Terraform VM password>"
+```
+
+Then verify the inventory is working:
+
+```bash
+ansible-inventory -i inventory/azure_rm.yml --list
+```
+
+You should see all three hosts — `mgrcnfgs-vm-*`, `Srv02`, and `Server2025` — in the `role_webserver` group with the correct connection types.
 
 ## Dynamic inventory
 

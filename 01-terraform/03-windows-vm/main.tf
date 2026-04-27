@@ -40,6 +40,29 @@ locals {
   }
 }
 
+data "azurerm_client_config" "current" {}
+
+resource "azurerm_key_vault" "main" {
+  name                = "mgrcnfgs-kv-${local.resource_suffix}"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  sku_name            = "standard"
+
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+
+    secret_permissions = ["Get", "Set", "Delete", "Purge"]
+  }
+}
+
+resource "azurerm_key_vault_secret" "vm_admin_password" {
+  name         = "vm-admin-password"
+  value        = random_password.vm_admin.result
+  key_vault_id = azurerm_key_vault.main.id
+}
+
 
 # see https://registry.terraform.io/modules/Azure/naming/azurerm/latest
 module "naming" {
