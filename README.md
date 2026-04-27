@@ -282,7 +282,7 @@ and the
 | Per 200MB package install | ~$0.002 |
 | 1,000 servers, 20 packages/month | ~$56/mo total |
  
-ConfigMgr is not free. CALs, SQL Server licensing, site server infrastructure, reliability, availability, 
+ConfigMgr is not free. CALs, SQL Server licensing, site server and datacenter infrastructure, reliability, availability, 
 and the time to maintain it not often accounted for in the cost calculation when someone argues against modernization.
  
 
