@@ -122,19 +122,16 @@ fix it automatically you'll want the rest of this stack.
     ├── 01-storage-account/ Adds a handwritten storage account
     ├── 02-avm-storage/     Replaces it with an Azure Verified Module
     └── 03-windows-vm/      Full VM stack, the cake tin
- 
+
 02-ansible/
+├── ansible.cfg               
+├── requirements.yml          # Collection dependencies
 ├── inventory/
-│   └── azure_rm.yml        Dynamic inventory driven by Arc tags
-├── policies/
-│   ├── controls/           One file per CIS control, the policy library
-│   ├── roles/              Role compositions, which controls apply where
-│   └── exceptions/         Documented deviations with approval records
-├── playbooks/
-│   ├── 0-audit.yml         Check mode only, free compliance report
-│   ├── 1-cis-enforce.yml   Applies CIS policy, reads from policies/
-│   └── 2-windows-baseline.yml  GPO equivalent configuration tasks
-└── requirements.yml        Ansible collection dependencies
+│   └── azure_rm.yml          # Dynamic inventory host files
+└── playbooks/
+    ├── 0-windows-baseline.yml
+    ├── 1-arc-onboard.yml
+    └── 2-windows-baseline.yml. # Base configuration for all windows systems. 
  
 03-chocolatey/
 ├── 0-bootstrap.yml         Offline install, internal repo, disable community source
