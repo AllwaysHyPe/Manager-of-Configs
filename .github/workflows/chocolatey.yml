@@ -72,7 +72,7 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-${{ hashfiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip
 
       - name: Install Ansible and dependencies
         run: |
