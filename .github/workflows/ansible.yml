@@ -52,6 +52,15 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Cache Ansible
+        id: cache-ansible
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ hashfiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip
+
       - name: Install Ansible and dependencies
         run: |
           pip install ansible pywinrm
