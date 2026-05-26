@@ -4,8 +4,7 @@
 > approach that enables any server to run what it needs, regardless of location.
  
 Session materials from the **From ConfigMgr to Manager of Configs** talk by
-[Hailey Phillips](https://bsky.app/profile/allwayshype.com) and [Frank Lesniak](https://bsky.app/profile/franklesniak.com).
- 
+[Hailey Phillips](https://bsky.app/profile/allwayshype.com)
  
 ## What This Is
  
