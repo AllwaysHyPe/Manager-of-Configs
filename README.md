@@ -11,15 +11,15 @@ Session materials from the **From ConfigMgr to Manager of Configs** talk by
 If you've seen any of my sessions on Azure Arc and Azure Update Manager, you've
 probably heard the same questions I kept getting: "This is really cool, but how
 do I manage my servers and third-party apps without ConfigMgr?"
+
  
-That's what this repo is. Not a "throw everything away and start over" resource.
-A "here's how you take the skills you already have and scale them" resource.
+That's what this repo is. Not a "throw everything away and start over" resource. Rather, here's how to take what you already have and mature into the DevOps practices of accountability, repeatability, and version control. 
  
 The barriers I hear consistently are real:
  
 - Where do I even start?
 - I've built all of these PowerShell scripts and I don't want to throw that time away
-- I'm a small team (or a team of one) and I have zero bandwidth to learn something new
+- I'm a small team (or a team of just me) and I have zero bandwidth to learn something new
 - What if I oversell this and can't deliver?
 All valid. This repo addresses all of them.
  
@@ -30,17 +30,19 @@ in this stack is doing exactly one thing it's actually good at.
  
 ## The Stack
  
-**Terraform** for what Terraform is good at: plan, build, destroy. Terraform is
-excellent at making infrastructure exist in a declared state and managing the
-full resource lifecycle. It is not good at waiting for things to come up,
+**Terraform** for what Terraform is good at: Lifecyle Management. 
+
+Terraform excels at the Day 0 tasks of creating infrastructure in a declared state and managing the
+full resource lifecycle. It is not good at applying security policies, installing software,
 handling reboots, or complex configuration sequencing. So we don't ask it to do
 those things. It provisions, enrolls into Azure Arc, sets the tags that drive
-everything downstream, and hands off cleanly.
+everything downstream, and hands off for Day 1 operations.
  
-**Ansible** for everything Terraform is not good at: configuration, sequencing,
-waiting, reboots, CIS policy enforcement, Chocolatey bootstrap, CCM agent setup.
-Ansible is agentless, works natively with Windows over WinRM, and handles the
-kind of complex multi-step work that ConfigMgr task sequences used to own. The
+**Ansible** for what Ansible is good at: Orchestration. 
+
+The Day 1 operations of installing software, configuration sequencing, reboots, and applying security policies.
+Ansible is agentless, works with Windows over WinRM, and handles the
+kind of complex multi-step work that ConfigMgr task sequences used to own. Ansible takes a procedural (imperative) approach to automation. The
 best part: you don't have to throw away your PowerShell scripts. You can call
 them from a playbook and get all of Ansible's orchestration on top of work you
 already did.
@@ -49,7 +51,7 @@ already did.
 consistent with how Azure-native VMs are patched. One of the first objections
 to cloud adoption, removed.
  
-**Chocolatey for Business** for application management. Internalized packages
+**Chocolatey for Business** for package management. Internalized packages
 that live in your own infrastructure, never phone home, and work whether your
 servers are in Azure, on-prem, in a co-lo, or somewhere in between.
  
@@ -61,17 +63,15 @@ maintenance.
  
 ## The Metaphor
  
-Counting every gram of flour is not the skill. Baking the cake is the skill.
+Counting every gram of flour is not the skill. A baked cake is the skill.
  
 ConfigMgr shops carry enormous institutional knowledge about exactly how
 everything is configured. That knowledge is valuable. But it lives in people's
 heads and runbooks, not in code. When those people leave, the grams go with them.
  
-A recipe is declarative. It says what done looks like. It does not care which
-oven you use, which region the flour came from, or whether you are baking one
-cake or a thousand.
+A recipe is declarative. You're not being told *how* to mix the ingredients, but rather "3 cups of flour, bake at 350ºF for 25 min". The recipe stays the same regardless of whether you are baking one cake or a thousand.
  
-Write the recipe once. Take the recipe anywhere for dessert anytime.
+Write the recipe once. Use the recipe as many times as you'd like.
  
 
  
@@ -90,8 +90,7 @@ for one job. You're learning a language your entire config story is written in.
  
 For the GPO question specifically: Azure Policy with Guest Configuration can
 enforce some of the same things, but it requires MOF files. If you haven't
-touched DSC since the brief window where it was going to be the future and then
-kind of wasn't, MOF files are not the skill you want to build. Ansible transfers.
+touched DSC, and MOF files aren't your thing, using Ansible instead is a no-brainer. 
  
  
 ## Where to Start
