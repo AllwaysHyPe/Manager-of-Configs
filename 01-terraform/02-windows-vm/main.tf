@@ -1,4 +1,4 @@
-# Stage 03 deploys the full VM stack. Terraform provisions the infrastructure
+# Stage 02 deploys the full VM stack. Terraform provisions the infrastructure
 # and sets the tags that drive everything downstream. Once this apply completes
 # Terraform's job is done. Ansible and Chocolatey pick up from here.
 
@@ -88,8 +88,7 @@ resource "azurerm_resource_group" "main" {
 # see https://registry.terraform.io/modules/Azure/avm-res-storage-storageaccount/azurerm/latest
 module "storage" {
   # The AVM handles encryption, network rules, blob properties, and other
-  # settings that the handwritten block in stage 01 left at defaults without
-  # making those choices visible. Same outcome, more confidence in the result.
+  # settings 
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "~> 0.4"
 

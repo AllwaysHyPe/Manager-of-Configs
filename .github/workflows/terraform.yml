@@ -35,8 +35,7 @@ jobs:
         stage:
           - 00-base
           - 01-storage-account
-          - 02-avm-storage
-          - 03-windows-vm
+          - 02-windows-vm
 
     steps:
       # see: https://github.com/actions/checkout/releases/tag/v6.0.2

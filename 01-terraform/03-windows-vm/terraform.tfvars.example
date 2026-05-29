@@ -1,6 +1,0 @@
-# terraform.tfvars.example
-# Copy to terraform.tfvars and update if needed
-# terraform.tfvars is gitignored — never commit it
-
-azure_region = "westus"
-prefix       = "mgrcnfgs"

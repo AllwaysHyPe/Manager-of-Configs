@@ -1,6 +1,3 @@
-# Stage 01 adds a storage account to the base resource group.
-
-
 # see https://registry.terraform.io/providers/hashicorp/random/3.8.1/docs/resources/pet
 resource "random_pet" "main" {
   length = 1
@@ -16,8 +13,6 @@ resource "random_string" "main" {
 }
 
 locals {
-  # Same suffix pattern as every other stage so resource names stay
-  # consistent and recognizable as the demo progresses.
   resource_suffix = "${random_pet.main.id}${random_string.main.result}"
 }
 
@@ -41,18 +36,21 @@ resource "azurerm_resource_group" "main" {
   }
 }
 
-# see https://registry.terraform.io/providers/hashicorp/azurerm/4.67.0/docs/resources/storage_account
-resource "azurerm_storage_account" "main" {
-  # Storage account names cannot contain hyphens and have a 24 character limit.
-  # We build the name directly using a short prefix and the random string rather
-  # than using the naming module, which would produce an invalid name with the
-  # mgrcnfgs prefix. mgrcfg (6) + random string (4) = 10 characters total.
+# see https://registry.terraform.io/modules/Azure/avm-res-storage-storageaccount/azurerm/latest
+module "storage" {
+  # The AVM handles encryption, network rules, blob properties, and other
+  # settings 
+  source  = "Azure/avm-res-storage-storageaccount/azurerm"
+  version = "~> 0.4"
 
+  name                      = module.naming.storage_account.name_unique
+  resource_group_name       = azurerm_resource_group.main.name
+  location                  = azurerm_resource_group.main.location
+  shared_access_key_enabled = true
+
+  # The AVM defaults to ZRS. ZRS is not available in all regions including
+  # westus, so LRS is set explicitly here.
   account_replication_type = "LRS"
-  account_tier             = "Standard"
-  location                 = azurerm_resource_group.main.location
-  name                     = "mgrcfg${random_string.main.result}"
-  resource_group_name      = azurerm_resource_group.main.name
 
   tags = {
     environment = "mgr-of-configs"

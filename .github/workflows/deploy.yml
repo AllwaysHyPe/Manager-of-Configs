@@ -34,8 +34,7 @@ jobs:
         stage:
           - 00-base
           - 01-storage-account
-          - 02-avm-storage
-          - 03-windows-vm
+          - 02-windows-vm
 
     steps:
       - uses: actions/checkout@v4
@@ -77,27 +76,27 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform init
-        working-directory: 01-terraform/03-windows-vm
+        working-directory: 01-terraform/02-windows-vm
         run: |
           terraform init \
             -backend-config="resource_group_name=${{ secrets.ARM_RG_NAME }}" \
             -backend-config="storage_account_name=${{ secrets.ARM_STG_NAME }}" \
             -backend-config="container_name=${{ secrets.ARM_CONTAINER_NAME }}" \
-            -backend-config="key=mgr-of-configs/03-windows-vm.tfstate" \
+            -backend-config="key=mgr-of-configs/02-windows-vm.tfstate" \
             -backend-config="use_azuread_auth=true"
 
       - name: Terraform plan
-        working-directory: 01-terraform/03-windows-vm
+        working-directory: 01-terraform/02-windows-vm
         run: terraform plan -out=tfplan -no-color
 
       - name: Terraform apply
-        working-directory: 01-terraform/03-windows-vm
+        working-directory: 01-terraform/02-windows-vm
         run: terraform apply tfplan
 
 
       - name: Capture Terraform outputs
         id: tf
-        working-directory: 01-terraform/03-windows-vm
+        working-directory: 01-terraform/02-windows-vm
         run: |
           echo "kv_name=$(terraform output -raw key_vault_name)" >> $GITHUB_OUTPUT
 

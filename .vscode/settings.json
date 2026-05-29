@@ -29,7 +29,6 @@
         "tasks/*.yml": "ansible",
         "handlers/*.yml": "ansible",
         "inventory/**/*.yml": "yaml",
-        "docker-compose.yml": "yaml",
         ".github/**/*.yml": "yaml"
     }
 }

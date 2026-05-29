@@ -1,11 +1,14 @@
-# 01-storage-account
+# 02-avm-storage
 
-Adds a storage account to the base resource group.
+Replaces the handwritten storage account from stage 01 with an Azure Verified
+Module. Same infrastructure, but safer defaults and increases consistency across teams.
+
+> ⚠️ **Storage Access Keys in AVM:** The Azure Verified Module defaults to `shared_access_key_enabled = false` for security. However, if your Terraform code or applications need to manage data plane resources (blob containers, queues, tables), you must set `shared_access_key_enabled = true` so Terraform can authenticate to manage nested resources. 
 
 ## What this deploys
 
 - Resource group named `mgrcnfgs-{random}`
-- Storage account named `mgrcfg{random}`
+- Storage account via AVM with LRS redundancy and secure defaults
 
 ## Setup
 
@@ -15,6 +18,9 @@ cp terraform.tfvars.example terraform.tfvars
 ```
 
 ## Commands
+
+Run `terraform init` before `plan` even if you already ran it in stage 01.
+The AVM module is a new source that needs to be downloaded.
 
 ```bash
 terraform init "-backend-config=backend.azurerm.tfbackend"

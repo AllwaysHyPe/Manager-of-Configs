@@ -18,8 +18,7 @@ output "resource_suffix" {
   value       = local.resource_suffix
 }
 
-# Uncomment after Exercise 1
-output "storage_account_name" {
-  description = "Name of the Azure Storage Account"
-  value       = azurerm_storage_account.main.name
+output "avm_storage_account_name" {
+  description = "Name of the AVM-managed storage account"
+  value       = module.storage.name
 }
