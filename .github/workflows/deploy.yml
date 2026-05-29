@@ -112,7 +112,7 @@ jobs:
 
       - name: Write Ansible inventory
         run: |
-          terraform -chdir=01-terraform/03-windows-vm output -raw ansible_inventory \
+          terraform -chdir=01-terraform/02-windows-vm output -raw ansible_inventory \
             | python3 -c "
           import sys, os
           content = sys.stdin.read()
