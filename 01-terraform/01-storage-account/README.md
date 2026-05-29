@@ -1,7 +1,5 @@
-# 02-avm-storage
+# 01-storage-account
 
-Replaces the handwritten storage account from stage 01 with an Azure Verified
-Module. Same infrastructure, but safer defaults and increases consistency across teams.
 
 > ⚠️ **Storage Access Keys in AVM:** The Azure Verified Module defaults to `shared_access_key_enabled = false` for security. However, if your Terraform code or applications need to manage data plane resources (blob containers, queues, tables), you must set `shared_access_key_enabled = true` so Terraform can authenticate to manage nested resources. 
 

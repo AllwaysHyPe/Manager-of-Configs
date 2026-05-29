@@ -117,9 +117,8 @@ fix it automatically you'll want the rest of this stack.
 ├── bootstrap/              One-time backend setup scripts (PowerShell + Bash)
 └── stages/
     ├── 00-base/            Resource group, the starting point
-    ├── 01-storage-account/ Adds a handwritten storage account
-    ├── 02-avm-storage/     Replaces it with an Azure Verified Module
-    └── 03-windows-vm/      Full VM stack, the cake tin
+    ├── 01-storage-account/ Adds a storage account
+    └── 02-windows-vm/      Full VM stack, the cake tin
 
 02-ansible/
 ├── ansible.cfg               
@@ -194,8 +193,7 @@ being added. Everything already deployed shows no changes. That's idempotency.
 ### Tear down
  
 ```bash
-cd terraform/03-windows-vm && terraform destroy -auto-approve
-cd ../02-avm-storage && terraform destroy -auto-approve
+cd ../02-windows-vm && terraform destroy -auto-approve
 cd ../01-storage-account && terraform destroy -auto-approve
 cd ../00-base && terraform destroy -auto-approve
 ```
