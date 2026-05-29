@@ -41,7 +41,7 @@ module "storage" {
   # The AVM handles encryption, network rules, blob properties, and other
   # settings 
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
-  version = "4.67.0"
+  version = "0.6.7"
 
   name                      = module.naming.storage_account.name_unique
   resource_group_name       = azurerm_resource_group.main.name
