@@ -126,16 +126,14 @@ fix it automatically you'll want the rest of this stack.
 ├── inventory/
 │   └── azure_rm.yml          # Dynamic inventory host files
 └── playbooks/
-    ├── 0-windows-baseline.yml
+    ├── 0-windows-baseline.yml # Base configuration for all windows systems.
     ├── 1-arc-onboard.yml
     └── 2-windows-baseline.yml. # Base configuration for all windows systems. 
  
 03-chocolatey/
 ├── 0-bootstrap.yml         Offline install, internal repo, disable community source
 ├── 1-packagemgmt.yml       Package states: present, latest, pinned, downgrade
-├── 2-conf-features.yml     Chocolatey features and config settings
-├── bonus-1-legacy-windows.yml  .NET 4.8 prereq path with mid-playbook reboot
-└── bonus-2-ccm-client.yml  CCM agent install and configuration
+└── 2-conf-features.yml     Chocolatey features and config settingsxs
 ```
  
 Each folder has its own README with setup steps and context for that section.

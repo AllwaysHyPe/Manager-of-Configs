@@ -1,4 +1,4 @@
-# 03-windows-vm
+# 02-windows-vm
 
 Full VM stack. Terraform provisions the infrastructure and sets the tags that
 drive everything downstream. Once this apply completes Terraform's job is done.
