@@ -83,32 +83,13 @@ to manage.
 You keep your PowerShell scripts. Run them from a playbook and supercharge them
 with Ansible's ability to dynamically target hosts based on discovered parameters.
  
-The same skills you build enforcing a CIS benchmark with Ansible are the same
-skills you use to bootstrap Chocolatey, configure IIS, set up the CCM agent,
-or run any other complex Windows configuration task. You're not learning a tool
-for one job. You're learning a language your entire config story is written in.
+You're not learning a tool for one job. You're learning a framework your entire config story is written in.
  
 For the GPO question specifically: Azure Policy with Guest Configuration can
 enforce some of the same things, but it requires MOF files. If you haven't
 touched DSC, and MOF files aren't your thing, using Ansible instead is a no-brainer. 
  
- 
-## Where to Start
- 
-Not everything needs to change at once. Here's a practical framework:
- 
-**Keep:** Domain membership, anything GPO/ConfigMgr is doing that genuinely
-belongs in policy, recent investments that are working.
- 
-**Replace:** Software deployment to servers, patch management, configuration
-drift detection.
- 
-**Start here:** Azure Arc Machine Config in audit-only mode. Less risk. Installs
-nothing. Changes nothing. Just shows you which servers are drifting from desired
-state. Once you see that report you'll want to fix the drift. Once you want to
-fix it automatically you'll want the rest of this stack.
- 
-
+**Start here:**
  
 ## Repo Structure
  
@@ -201,7 +182,7 @@ cd ../00-base && terraform destroy -auto-approve
 ## Getting Started with Ansible
 ### Prerequisites
  
-Ansible runs on Linux or WSL. If you're on Windows, WSL is the easiest path.
+Ansible runs on Linux, making it incredibly lightweight and able to run just about anywhere! If you're on Windows, WSL is one of the easiest path's in my experience.
 For a full WSL setup walkthrough see:
 [Modern Server Management with Ansible](https://www.allwayshype.com/allways-hype/modern-server-management-with-ansible)
  
