@@ -3,7 +3,7 @@
 > Reimagine server management from fine-grained configuration to a flexible
 > approach that enables any server to run what it needs, regardless of location.
  
-Session materials from the **From ConfigMgr to Manager of Configs** talk by
+Session materials for the [From ConfigMgr to Manager of Configs](https://www.youtube.com/watch?v=ZFNM0wisenE) session by
 [Hailey Phillips](https://bsky.app/profile/allwayshype.com)
  
 ## What This Is
@@ -269,18 +269,24 @@ and the time to maintain it not often accounted for in the cost calculation when
 - Jeremy Murrah: [Ansible for the Windows Admin](https://www.youtube.com/watch?v=ZI20Y10OKd0)
 - Josh King: [Ansible 101 for the Windows SysAdmin](https://www.youtube.com/watch?v=SqO2HkKep90)
 - Josh King: [Your Superpowered Windows Infrastructure Toolkit: Ansible, PowerShell, and Chocolatey](https://www.youtube.com/watch?v=oKJtlEenaog&t=4664s)
-### Azure Arc
+### Ansible vs Terraform
+- [Ansible vs. Terraform](https://www.redhat.com/en/topics/automation/ansible-vs-terraform)
+- ### Azure Arc
 - [Azure Arc Overview](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview)
 - [Onboard servers with Ansible](https://learn.microsoft.com/en-us/azure/azure-arc/servers/onboard-ansible-playbooks)
 - [Azure Arc Pricing](https://azure.microsoft.com/en-us/pricing/details/azure-arc/core-control-plane/)
-### Terraform
-- [Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
-- [Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
-- [Azure Naming Module](https://registry.terraform.io/modules/Azure/naming/azurerm/latest)
 ### Chocolatey
 - [Chocolatey for Business](https://chocolatey.org/for-business)
 - [Chocolatey Central Management](https://docs.chocolatey.org/en-us/central-management/)
 - [Package Internalizer](https://docs.chocolatey.org/en-us/features/paid/package-internalizer)
+### DevOps
+- [The Release Pipeline Model](https://github.com/dsccommunity/DscWorkshop/blob/main/Exercises/TheReleasePipelineModel.pdf)
+- [The Release Pipeline Model - WinOps Conf 2016](https://www.youtube.com/watch?v=6mFk3Oxdiwc)
+- [DevOps Reading List - Steven Murawski](https://stevenmurawski.com/devops-reading-list)
+- ### Terraform
+- [Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
+- [Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
+- [Azure Naming Module](https://registry.terraform.io/modules/Azure/naming/azurerm/latest)
 ### WSL Setup
 - [Set up a WSL development environment](https://learn.microsoft.com/en-us/windows/wsl/setup/environment)
 - [Allways HyPe: Modern Server Management with Ansible](https://www.allwayshype.com/allways-hype/modern-server-management-with-ansible)
