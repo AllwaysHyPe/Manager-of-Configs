@@ -271,7 +271,7 @@ and the time to maintain it not often accounted for in the cost calculation when
 - Josh King: [Your Superpowered Windows Infrastructure Toolkit: Ansible, PowerShell, and Chocolatey](https://www.youtube.com/watch?v=oKJtlEenaog&t=4664s)
 ### Ansible vs Terraform
 - [Ansible vs. Terraform](https://www.redhat.com/en/topics/automation/ansible-vs-terraform)
-- ### Azure Arc
+### Azure Arc
 - [Azure Arc Overview](https://learn.microsoft.com/en-us/azure/azure-arc/servers/overview)
 - [Onboard servers with Ansible](https://learn.microsoft.com/en-us/azure/azure-arc/servers/onboard-ansible-playbooks)
 - [Azure Arc Pricing](https://azure.microsoft.com/en-us/pricing/details/azure-arc/core-control-plane/)
@@ -283,7 +283,7 @@ and the time to maintain it not often accounted for in the cost calculation when
 - [The Release Pipeline Model](https://github.com/dsccommunity/DscWorkshop/blob/main/Exercises/TheReleasePipelineModel.pdf)
 - [The Release Pipeline Model - WinOps Conf 2016](https://www.youtube.com/watch?v=6mFk3Oxdiwc)
 - [DevOps Reading List - Steven Murawski](https://stevenmurawski.com/devops-reading-list)
-- ### Terraform
+### Terraform
 - [Terraform Azure Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
 - [Azure Verified Modules](https://azure.github.io/Azure-Verified-Modules/)
 - [Azure Naming Module](https://registry.terraform.io/modules/Azure/naming/azurerm/latest)
